@@ -32,5 +32,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Tes 2FA mengaktifkan penegakan secara eksplisit; tes lain tidak boleh bergantung pada .env. -->
+        <env name="SECURITY_ENFORCE_2FA" value="false" force="true"/>
     </php>
 </phpunit>

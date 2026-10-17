@@ -2,6 +2,13 @@
 
 Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Changelog](https://keepachangelog.com/id-ID/1.1.0/) dan penomoran versi mengikuti [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Unreleased]
+
+### Diperbaiki
+
+- CI GitHub Actions memakai SQLite (`.env.example` menargetkan MySQL Docker lokal) dan menjalankan `composer audit:all`.
+- Tes tidak lagi bergantung pada nilai `SECURITY_ENFORCE_2FA` di `.env`.
+
 ## [3.0.1] - 2026-10-17
 
 Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 dan Fase 1).
@@ -27,4 +34,5 @@ Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 d
 - Nilai pengaturan rahasia disimpan terenkripsi dan tidak pernah dikirim ke browser. Session terenkripsi.
 - Advisory npm tinypool (GHSA-5gmw-xhrv-c9v3) ditutup lewat `overrides`.
 
+[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.0.1...HEAD
 [3.0.1]: https://github.com/dhestaadeanggajuanda/moso/releases/tag/v3.0.1
