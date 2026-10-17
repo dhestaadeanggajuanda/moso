@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { Plus } from '@lucide/vue';
+import PageBuilderController from '@/actions/App/Http/Controllers/Admin/PageBuilderController';
 import PageController from '@/actions/App/Http/Controllers/Admin/PageController';
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue';
 import PageHeader from '@/components/admin/PageHeader.vue';
@@ -70,7 +71,13 @@ defineOptions({
                         {{ formatDateTime(page.updated_at) }}
                     </p>
                 </div>
-                <div class="flex gap-1">
+                <div class="flex flex-wrap gap-1">
+                    <Button variant="outline" size="sm" as-child>
+                        <Link :href="PageBuilderController.edit(page.id)"
+                            >Susun blok
+                            <span class="sr-only">{{ page.title }}</span></Link
+                        >
+                    </Button>
                     <Button variant="ghost" size="sm" as-child>
                         <Link :href="PageController.edit(page.id)"
                             >Ubah

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AgendaController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MenuController;
+use App\Http\Controllers\Admin\PageBuilderController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\PublicDocumentController;
 use App\Http\Controllers\Admin\SakipController;
@@ -23,6 +24,8 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
         Route::resource('articles', ArticleController::class)->except('show');
         Route::resource('categories', CategoryController::class)->except('show');
         Route::resource('pages', PageController::class)->except('show');
+        Route::get('pages/{page}/builder', [PageBuilderController::class, 'edit'])->name('pages.builder');
+        Route::put('pages/{page}/blocks', [PageBuilderController::class, 'update'])->name('pages.blocks.update');
         Route::resource('agendas', AgendaController::class)->except('show');
 
         // Modul kepatuhan: PPID, Standar Pelayanan, E-SAKIP, dan Menu Builder.

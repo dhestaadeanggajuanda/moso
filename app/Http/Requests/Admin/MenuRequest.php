@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\MenuLocation;
 use App\Models\Menu;
+use App\Support\SafeUrl;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -11,12 +12,6 @@ use Illuminate\Validation\Validator;
 
 class MenuRequest extends FormRequest
 {
-    /**
-     * URL internal ("/profil") atau http(s) absolut. Skema lain (javascript:,
-     * data:) dan URL protocol-relative ("//evil") ditolak (OWASP A05).
-     */
-    public const SAFE_URL_PATTERN = '/^(\/(?!\/)\S*|https?:\/\/\S+)$/i';
-
     protected function prepareForValidation(): void
     {
         $this->merge([
@@ -48,7 +43,7 @@ class MenuRequest extends FormRequest
             'parent_id' => ['nullable', 'integer', Rule::exists('menus', 'id')],
             'label' => ['required', 'string', 'max:100'],
             'page_id' => ['nullable', 'integer', Rule::exists('pages', 'id'), 'required_without:url'],
-            'url' => ['nullable', 'string', 'max:500', 'required_without:page_id', 'prohibits:page_id', 'regex:'.self::SAFE_URL_PATTERN],
+            'url' => ['nullable', 'string', 'max:500', 'required_without:page_id', 'prohibits:page_id', 'regex:'.SafeUrl::PATTERN],
             'open_in_new_tab' => ['boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['boolean'],
@@ -99,7 +94,7 @@ class MenuRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'url.regex' => 'URL harus diawali "/" (halaman internal) atau "http(s)://".',
+            'url.regex' => SafeUrl::MESSAGE,
             'url.required_without' => 'Isi URL atau pilih halaman tujuan.',
             'page_id.required_without' => 'Pilih halaman tujuan atau isi URL.',
             'url.prohibits' => 'Pilih salah satu: halaman tujuan atau URL.',

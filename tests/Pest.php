@@ -5,7 +5,9 @@ use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Sleep;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -83,4 +85,36 @@ function fakePrivateDisk(): void
         fn (string $path, DateTimeInterface $expiration, array $options) => 'https://signed.test/'.$path
             .'?disposition='.rawurlencode((string) ($options['ResponseContentDisposition'] ?? '')),
     );
+}
+
+/**
+ * Arahkan integrasi Media Center ke host uji dan tolak permintaan yang tidak dipalsukan.
+ */
+function fakeMediaCenterHost(): void
+{
+    config(['mediacenter.base_url' => 'https://mc.test']);
+    Http::preventStrayRequests();
+    Sleep::fake();
+}
+
+/**
+ * Satu post WordPress seperti yang dikirim Media Center.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function wpPost(int $id, string $title, string $dateGmt, array $overrides = []): array
+{
+    return array_replace_recursive([
+        'id' => $id,
+        'date_gmt' => $dateGmt,
+        'link' => "https://mc.test/berita/post-{$id}/",
+        'title' => ['rendered' => $title],
+        'excerpt' => ['rendered' => '<p>Singkawang, MC &#8211; Ringkasan berita.</p>'],
+        '_embedded' => ['wp:featuredmedia' => [[
+            'source_url' => "https://mc.test/wp-content/uploads/{$id}.jpg",
+            'alt_text' => '',
+            'media_details' => ['sizes' => ['medium' => ['source_url' => "https://mc.test/wp-content/uploads/{$id}-300.jpg"]]],
+        ]]],
+    ], $overrides);
 }

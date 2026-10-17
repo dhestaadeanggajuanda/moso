@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import PageBuilderController from '@/actions/App/Http/Controllers/Admin/PageBuilderController';
 import PageController from '@/actions/App/Http/Controllers/Admin/PageController';
 import PageHeader from '@/components/admin/PageHeader.vue';
 import InputError from '@/components/InputError.vue';
@@ -50,10 +51,18 @@ const formKey = computed(() =>
             :title="title"
             :description="
                 page
-                    ? `${page.blocks_count} blok konten. Penyusunan blok drag-and-drop tersedia di Fase 3.`
-                    : undefined
+                    ? `${page.blocks_count} blok konten.`
+                    : 'Simpan halaman dulu, lalu susun isinya di Page Builder.'
             "
-        />
+        >
+            <template v-if="page" #actions>
+                <Button variant="outline" as-child>
+                    <Link :href="PageBuilderController.edit(page.id)"
+                        >Buka Page Builder</Link
+                    >
+                </Button>
+            </template>
+        </PageHeader>
 
         <Form
             :key="formKey"

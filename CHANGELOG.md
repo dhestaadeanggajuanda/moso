@@ -6,6 +6,13 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Ditambahkan
 
+- Fase 3, integrasi Media Center dan Page Builder:
+    - `MediaCenterApiService` (Http facade) untuk WordPress REST API Media Center Kota, dengan mode tag, kategori, dan pencarian.
+    - Cache stale-while-revalidate, retry hanya untuk GET, dan perintah `mediacenter:warm` terjadwal tiap 10 menit.
+    - `HybridNewsAggregator` menggabungkan artikel lokal dengan berita Media Center: diurutkan per tanggal, judul ganda dibuang, dan berita lokal tetap tampil bila Media Center gagal.
+    - Mesin Page Builder: `BlockRegistry` (whitelist blok HeroBanner, NewsGridHybrid, AgendaKegiatan, RichText), validasi props per tipe blok, dan `BlockHydrator` yang menyuntikkan data saat render.
+    - Editor drag-and-drop `/admin/pages/{id}/builder` (vuedraggable@next + Pinia): palet blok, kanvas, dan inspector. Tersedia juga tombol Tambah, Naik, dan Turun sebagai alternatif seret.
+    - Blok NewsGridHybrid menyimpan `fetch_media_center` dan `media_center_keyword` di `pages.content_blocks`.
 - Fase 2, modul kepatuhan:
     - Dokumen PPID (`public_documents`): kategori berkala, serta merta, dan setiap saat.
     - Layanan/Standar Pelayanan (`services`): persyaratan, prosedur, jangka waktu, biaya, produk, dan saluran pengaduan.
@@ -18,6 +25,9 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Keamanan
 
+- Permintaan ke Media Center hanya menuju base URL dari config, dengan kata kunci `^[a-z0-9-]{1,50}$` (anti-SSRF). Tautan dan gambar hanya diterima dari host Media Center, dan teksnya diubah menjadi teks polos.
+- `content_blocks` divalidasi terhadap `BlockRegistry`: tipe asing ditolak, props asing dibuang, HTML blok teks disanitasi, dan tautan tombol dibatasi ke URL aman.
+- CSP `img-src` mengizinkan host gambar Media Center saja (bukan untuk script).
 - Dokumen yang belum terbit dibalas 404 di jalur publik. Path storage tidak pernah dikirim ke API atau frontend.
 - Unggahan PDF diperiksa lewat MIME dan tanda tangan `%PDF-`. Nama unduhan dibentuk dari slug, bukan dari nama berkas pengguna.
 - URL menu dibatasi ke `/...` atau `http(s)://`. Penyusunan menu juga dicegah membentuk siklus induk-anak.

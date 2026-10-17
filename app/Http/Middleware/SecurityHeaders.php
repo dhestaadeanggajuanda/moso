@@ -56,6 +56,8 @@ class SecurityHeaders
     private function contentSecurityPolicy(Request $request): string
     {
         $storage = $this->origin(config('filesystems.disks.s3.url'));
+        // Gambar berita Media Center ditampilkan langsung dari host aslinya.
+        $mediaCenter = $this->origin(config('mediacenter.base_url'));
         [$viteHttp, $viteWs] = $this->viteDevServerOrigins();
 
         $directives = [
@@ -64,7 +66,7 @@ class SecurityHeaders
             // Inline style tetap diizinkan: komponen UI (reka-ui) dan progress bar Inertia menyuntikkan style.
             // Jangan menambah nonce di sini, karena nonce membuat browser mengabaikan 'unsafe-inline'.
             'style-src' => ["'self'", "'unsafe-inline'", $viteHttp],
-            'img-src' => ["'self'", 'data:', 'blob:', $storage, ...config('security.csp.img_src')],
+            'img-src' => ["'self'", 'data:', 'blob:', $storage, $mediaCenter, ...config('security.csp.img_src')],
             'font-src' => ["'self'", 'data:', $viteHttp],
             'connect-src' => ["'self'", $viteHttp, $viteWs, ...config('security.csp.connect_src')],
             'media-src' => ["'self'", $storage, ...config('security.csp.media_src')],

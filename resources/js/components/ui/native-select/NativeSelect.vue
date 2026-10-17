@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 // Elemen <select> asli: aksesibel, ramah ponsel, dan ikut terkirim di <Form> Inertia.
 const props = defineProps<{
   defaultValue?: string | number
-  modelValue?: string | number
+  modelValue?: string | number | null
   class?: HTMLAttributes["class"]
 }>()
 

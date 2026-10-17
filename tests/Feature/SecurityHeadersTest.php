@@ -33,12 +33,18 @@ it('sends a nonce based content security policy that matches the inline script',
     expect($response->getContent())->toContain('<script nonce="'.$matches[1].'">');
 });
 
-it('allows images from the public storage bucket', function () {
-    config(['filesystems.disks.s3.url' => 'https://media.example.go.id/moso-public']);
+it('allows images from the public storage bucket and the media center', function () {
+    config([
+        'filesystems.disks.s3.url' => 'https://media.example.go.id/moso-public',
+        'mediacenter.base_url' => 'https://mediacenter.example.go.id',
+    ]);
 
     $csp = $this->get(route('home'))->headers->get('Content-Security-Policy');
 
-    expect($csp)->toMatch("#img-src [^;]*https://media\.example\.go\.id#");
+    expect($csp)
+        ->toMatch("#img-src [^;]*https://media\.example\.go\.id#")
+        ->toMatch("#img-src [^;]*https://mediacenter\.example\.go\.id#")
+        ->not->toMatch('#script-src [^;]*mediacenter#');
 });
 
 it('only sends hsts over https', function () {

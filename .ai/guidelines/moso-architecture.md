@@ -29,6 +29,8 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 - Data dinamis (berita, agenda, layanan) **tidak** disimpan di JSON. Data itu disuntikkan saat render oleh `BlockHydrator` ke key `data`.
 - Komponen tema untuk blok harus bernama sama dengan `type` dan berada di `Themes/{Tema}/Components/{type}.vue`.
 - Blok `NewsGridHybrid` menggabungkan artikel lokal dengan Media Center bila `props.fetch_media_center = true`. Kata kunci diambil dari `props.media_center_keyword`.
+- Menambah tipe blok baru: buat kelas di `app/Services/PageBuilder/Blocks` (turunan `AbstractBlock`), daftarkan di `BlockRegistry::BLOCKS`, tambahkan tipenya di `resources/js/types/blocks.ts`, ikon/ringkasan di `resources/js/Builder/blockDefinitions.ts`, inspector di `resources/js/Builder/inspectors`, dan komponen tema dengan nama yang sama. Nilai bawaan props hanya didefinisikan di server (`defaults()`).
+- Integrasi Media Center hanya lewat `App\Services\MediaCenter\MediaCenterApiService` (Http facade, cache stale-while-revalidate, tidak pernah melempar ke pemanggil). Berita dari mana pun dinormalisasi menjadi `App\Services\News\NewsItem` (teks polos).
 
 ## Storage
 
