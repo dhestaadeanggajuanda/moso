@@ -2,9 +2,13 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import {
     CalendarDays,
+    ChartColumn,
+    ClipboardList,
     ExternalLink,
     FileText,
+    FolderOpen,
     LayoutGrid,
+    ListTree,
     Newspaper,
     Settings2,
     Tags,
@@ -13,7 +17,11 @@ import { computed } from 'vue';
 import AgendaController from '@/actions/App/Http/Controllers/Admin/AgendaController';
 import ArticleController from '@/actions/App/Http/Controllers/Admin/ArticleController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
+import MenuController from '@/actions/App/Http/Controllers/Admin/MenuController';
 import PageController from '@/actions/App/Http/Controllers/Admin/PageController';
+import PublicDocumentController from '@/actions/App/Http/Controllers/Admin/PublicDocumentController';
+import SakipController from '@/actions/App/Http/Controllers/Admin/SakipController';
+import ServiceController from '@/actions/App/Http/Controllers/Admin/ServiceController';
 import SettingController from '@/actions/App/Http/Controllers/Admin/SettingController';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
@@ -62,6 +70,34 @@ const mainNavItems = computed<NavItem[]>(() => {
                 href: AgendaController.index(),
                 icon: CalendarDays,
             },
+        ],
+        [
+            can.ppid,
+            {
+                title: 'Dokumen PPID',
+                href: PublicDocumentController.index(),
+                icon: FolderOpen,
+            },
+        ],
+        [
+            can.services,
+            {
+                title: 'Layanan',
+                href: ServiceController.index(),
+                icon: ClipboardList,
+            },
+        ],
+        [
+            can.sakip,
+            {
+                title: 'E-SAKIP',
+                href: SakipController.index(),
+                icon: ChartColumn,
+            },
+        ],
+        [
+            can.menus,
+            { title: 'Menu', href: MenuController.index(), icon: ListTree },
         ],
         [
             can.settings,

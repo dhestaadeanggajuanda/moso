@@ -4,6 +4,25 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Fase 2, modul kepatuhan:
+    - Dokumen PPID (`public_documents`): kategori berkala, serta merta, dan setiap saat.
+    - Layanan/Standar Pelayanan (`services`): persyaratan, prosedur, jangka waktu, biaya, produk, dan saluran pengaduan.
+    - E-SAKIP (`e_sakip`): Renstra, Renja, IKU, PK, Rencana Aksi, dan LKjIP.
+- Menu Builder bertingkat (`menus`, maksimal 3 tingkat) untuk header dan footer. Item dapat menautkan halaman internal atau URL.
+- Halaman admin untuk keempat modul, dengan pratinjau berkas untuk pengelola.
+- Unggahan PDF ke bucket privat lewat `SecureDocumentService`, dan unduhan publik `/unduh/ppid/{slug}` serta `/unduh/sakip/{id}` lewat URL bertanda tangan.
+- API publik read-only `/api/v1`: `services`, `services/{slug}`, `ppid`, `sakip`, dan `menus/{location}`. Hanya data terbit, dengan rate limit 60/menit, `Cache-Control` + ETag, dan API Resource yang hanya berisi field yang diizinkan.
+- Data contoh Fase 2 di `DemoContentSeeder` (khusus lokal).
+
+### Keamanan
+
+- Dokumen yang belum terbit dibalas 404 di jalur publik. Path storage tidak pernah dikirim ke API atau frontend.
+- Unggahan PDF diperiksa lewat MIME dan tanda tangan `%PDF-`. Nama unduhan dibentuk dari slug, bukan dari nama berkas pengguna.
+- URL menu dibatasi ke `/...` atau `http(s)://`. Penyusunan menu juga dicegah membentuk siklus induk-anak.
+- Rate limit unduhan dokumen: 30/menit per IP.
+
 ### Diperbaiki
 
 - CI GitHub Actions memakai SQLite (`.env.example` menargetkan MySQL Docker lokal) dan menjalankan `composer audit:all`.

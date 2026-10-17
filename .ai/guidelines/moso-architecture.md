@@ -35,6 +35,12 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 - Unggahan publik ke disk `s3`. File privat ke disk `s3_private`, diakses lewat `temporaryUrl()`.
 - Jangan pernah memakai ACL per objek (`visibility` public / `setVisibility`), karena Garage tidak mendukungnya. Lihat `docs/STORAGE-S3.md`.
 - Unggahan gambar wajib lewat `App\Services\Storage\SecureUploadService`.
+- Dokumen PDF (PPID, E-SAKIP) wajib lewat `App\Services\Storage\SecureDocumentService`: selalu ke `s3_private`, lalu disajikan lewat route `documents.*` (publik, hanya bila terbit) atau aksi `file` di admin (dicek Policy). Jangan pernah mengirim path storage ke API atau frontend.
+
+## Modul kepatuhan dan API publik
+
+- PPID (`PublicDocument`, kategori `PublicDocumentCategory`), Standar Pelayanan (`Service`), E-SAKIP (`ESakip`, tabel `e_sakip`, kolom berkas `file_path_s3`), dan Menu (`Menu`, adjacency list, maks. 3 tingkat, tree via `Menu::treeFor()`).
+- API publik read-only di `routes/api.php` (`/api/v1`, nama `api.v1.*`): hanya data terbit, middleware `throttle:api` + `cache.headers` (ETag), respons lewat API Resource di `app/Http/Resources` dengan field yang di-whitelist.
 
 ## Peran dan workflow artikel
 

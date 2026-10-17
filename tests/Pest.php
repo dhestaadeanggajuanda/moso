@@ -4,6 +4,8 @@ use App\Enums\RoleName;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -60,4 +62,25 @@ function userWithRole(RoleName $role, array $attributes = []): User
     }
 
     return User::factory()->create($attributes)->assignRole($role);
+}
+
+/**
+ * Berkas PDF minimal yang lolos validasi MIME dan tanda tangan "%PDF-".
+ */
+function fakePdf(string $name = 'dokumen.pdf'): UploadedFile
+{
+    return UploadedFile::fake()->createWithContent($name, "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n");
+}
+
+/**
+ * Palsukan disk privat dan URL bertanda tangannya agar tujuan redirect bisa diperiksa.
+ */
+function fakePrivateDisk(): void
+{
+    Storage::fake('s3_private');
+
+    Storage::disk('s3_private')->buildTemporaryUrlsUsing(
+        fn (string $path, DateTimeInterface $expiration, array $options) => 'https://signed.test/'.$path
+            .'?disposition='.rawurlencode((string) ($options['ResponseContentDisposition'] ?? '')),
+    );
 }

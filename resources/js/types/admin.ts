@@ -34,3 +34,13 @@ export type CategoryOption = {
     id: number;
     name: string;
 };
+
+export type MenuNode = {
+    id: number;
+    label: string;
+    href: string | null;
+    is_active: boolean;
+    open_in_new_tab: boolean;
+    sort_order: number;
+    children: MenuNode[];
+};

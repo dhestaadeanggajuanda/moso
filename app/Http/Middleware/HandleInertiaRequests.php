@@ -5,7 +5,11 @@ namespace App\Http\Middleware;
 use App\Models\Agenda;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\ESakip;
+use App\Models\Menu;
 use App\Models\Page;
+use App\Models\PublicDocument;
+use App\Models\Service;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -54,6 +58,10 @@ class HandleInertiaRequests extends Middleware
                     'categories' => $user->can('viewAny', Category::class),
                     'pages' => $user->can('viewAny', Page::class),
                     'agendas' => $user->can('viewAny', Agenda::class),
+                    'ppid' => $user->can('viewAny', PublicDocument::class),
+                    'services' => $user->can('viewAny', Service::class),
+                    'sakip' => $user->can('viewAny', ESakip::class),
+                    'menus' => $user->can('viewAny', Menu::class),
                     'settings' => $user->can('viewAny', Setting::class),
                 ] : (object) [],
             ],

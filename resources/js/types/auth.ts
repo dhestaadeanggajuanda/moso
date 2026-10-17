@@ -18,6 +18,10 @@ export type AdminAbilities = {
     categories: boolean;
     pages: boolean;
     agendas: boolean;
+    ppid: boolean;
+    services: boolean;
+    sakip: boolean;
+    menus: boolean;
     settings: boolean;
 };
 
