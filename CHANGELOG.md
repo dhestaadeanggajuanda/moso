@@ -6,6 +6,12 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Ditambahkan
 
+- Fase 5, alur persetujuan artikel:
+    - Status artikel kini berpindah lewat `ArticleWorkflow`: ajukan, setujui (siap terbit), minta revisi (catatan wajib), terbitkan (bisa dijadwalkan), arsipkan, dan terbitkan ulang. Status dibaca ulang dengan row lock agar dua reviewer tidak menimpa satu sama lain.
+    - Tabel `article_comments` menyimpan riwayat setiap perubahan status beserta catatannya, dan komentar diskusi antara penulis dan reviewer.
+    - Halaman tinjau artikel di admin (`/admin/articles/{id}`): pratinjau isi, tombol aksi (`ActionButtons.vue`) yang dihitung Policy di server, riwayat, dan kolom komentar. Daftar artikel menampilkan antrean "Menunggu review" dan "Siap terbit" bagi reviewer.
+    - Peran: Kontributor mengajukan artikelnya, Editor mereview, Approver menerbitkan dan mengarsipkan.
+    - Jejak audit di channel log `audit`: transisi status, login, gagal login, lockout, logout, reset password, aktif/nonaktif 2FA, serta pemberian dan pencabutan peran/permission.
 - Situs publik lanjutan:
     - Halaman Informasi Publik `/ppid`: dokumen terbit per kategori (berkala, serta merta, setiap saat) dengan jumlah per kategori, penjelasan UU 14/2008, dan paginasi.
     - Halaman E-SAKIP `/sakip`: dokumen terbit dikelompokkan per tahun dan diurutkan menurut siklus SAKIP (Renstra sampai LKjIP), dengan saringan tahun dan jenis dokumen.
@@ -29,6 +35,8 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Keamanan
 
+- Prinsip empat mata: penulis tidak boleh menyetujui atau menerbitkan artikelnya sendiri. Setiap aksi alur dicek ArticlePolicy di server, endpoint aksi dan komentar dibatasi 30/menit, dan aksi yang tidak lagi sesuai status ditolak alih-alih menimpa.
+- Jejak audit tidak memuat password atau token; gagal login hanya mencatat email dan IP.
 - Halaman PPID dan E-SAKIP hanya menampilkan dokumen terbit dan hanya mengirim tautan route unduhan, tidak pernah path storage.
 - Logo hanya bisa diisi lewat unggahan (`SecureUploadService`: re-encode WebP, nama UUID, SVG ditolak), dicek Policy pengaturan dan dibatasi 20/menit. Formulir pengaturan teks menolak key `site.logo_*`. Saat logo diganti, hanya berkas hasil unggahan yang dihapus.
 

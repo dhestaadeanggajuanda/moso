@@ -73,6 +73,22 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Jejak audit keamanan (OWASP A09): login, perubahan peran, transisi status artikel.
+        // Tes mengarahkan ke channel `null` lewat LOG_AUDIT_STACK di phpunit.xml.
+        'audit' => [
+            'driver' => 'stack',
+            'channels' => explode(',', (string) env('LOG_AUDIT_STACK', 'audit_file')),
+            'ignore_exceptions' => false,
+        ],
+
+        'audit_file' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => 'info',
+            'max_files' => env('LOG_AUDIT_DAYS', 365),
+            'replace_placeholders' => true,
+        ],
+
         'monthly' => [
             'driver' => 'monthly',
             'path' => storage_path('logs/laravel.log'),

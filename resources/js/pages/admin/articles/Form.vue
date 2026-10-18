@@ -2,15 +2,22 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import ArticleController from '@/actions/App/Http/Controllers/Admin/ArticleController';
+import ActionButtons from '@/Admin/Workflow/ActionButtons.vue';
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue';
 import PageHeader from '@/components/admin/PageHeader.vue';
 import StatusBadge from '@/components/admin/StatusBadge.vue';
 import InputError from '@/components/InputError.vue';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { CategoryOption, StatusValue } from '@/types/admin';
+import { formatDateTime } from '@/lib/format';
+import type {
+    CategoryOption,
+    StatusValue,
+    WorkflowAction,
+} from '@/types/admin';
 
 type ArticleForm = {
     id: number;
@@ -24,6 +31,13 @@ type ArticleForm = {
     category_ids: number[];
     updated_at: string | null;
     can: { delete: boolean };
+    actions: WorkflowAction[];
+    /** Catatan revisi terakhir (teks polos), hanya saat status perlu revisi. */
+    revision_note: {
+        body: string;
+        user: string;
+        created_at: string | null;
+    } | null;
 };
 
 const props = defineProps<{
@@ -59,12 +73,36 @@ const formKey = computed(() =>
     <div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
         <PageHeader
             :title="isEdit ? 'Ubah artikel' : 'Tulis artikel'"
-            description="Artikel baru tersimpan sebagai draf. Alur review dan terbit hadir di fase berikutnya."
+            description="Artikel baru tersimpan sebagai draf. Simpan perubahan dulu, lalu ajukan untuk direview Editor sebelum diterbitkan Approver."
         >
             <template #actions>
                 <StatusBadge v-if="article" :status="article.status" />
+                <Button v-if="article" variant="outline" size="sm" as-child>
+                    <Link :href="ArticleController.show(article.id)">
+                        Riwayat dan tinjauan
+                    </Link>
+                </Button>
             </template>
         </PageHeader>
+
+        <Alert v-if="article?.revision_note" variant="destructive">
+            <AlertTitle>
+                Catatan revisi dari {{ article.revision_note.user }}
+                <span class="font-normal text-muted-foreground">
+                    · {{ formatDateTime(article.revision_note.created_at) }}
+                </span>
+            </AlertTitle>
+            <AlertDescription class="whitespace-pre-line text-foreground">
+                {{ article.revision_note.body }}
+            </AlertDescription>
+        </Alert>
+
+        <ActionButtons
+            v-if="article && article.actions.length"
+            :article-id="article.id"
+            :article-title="article.title"
+            :actions="article.actions"
+        />
 
         <Form
             :key="formKey"

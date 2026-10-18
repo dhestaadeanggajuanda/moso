@@ -51,4 +51,7 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 
 - Role (spatie/laravel-permission): Super Admin, Approver, Editor, Kontributor. Super Admin melewati semua Gate lewat `Gate::before`.
 - Status artikel (`App\Enums\ArticleStatus`): `draft` → `submitted` → `ready_to_publish` | `revision_required` → `published` (lalu `archived`).
-- Transisi status hanya lewat `App\Services\Workflow\ArticleWorkflow`, dan setiap transisi dicatat.
+- Transisi status hanya lewat `App\Services\Workflow\ArticleWorkflow` (endpoint `admin.articles.transitions.store`), dan setiap transisi dicatat di `article_comments` serta log `audit`. Kolom `status` sengaja tidak fillable.
+- Peta transisi ada di `App\Enums\ArticleAction` (`fromStatuses()`, `to()`); hak aksi dicek ability `ArticlePolicy` dengan nama `ArticleAction::ability()`. Tombol aksi di UI (`resources/js/Admin/Workflow/ActionButtons.vue`) hanya menampilkan daftar dari `ArticleWorkflow::availableActions()`, tidak pernah dihitung di frontend.
+- Prinsip empat mata: penulis tidak boleh menyetujui (`approve`) atau menerbitkan (`publish`) artikelnya sendiri.
+- Jejak audit keamanan lewat `App\Support\AuditLog` (channel `audit`; di tes diarahkan ke `null`). Listener di `app/Listeners` dicatat otomatis lewat event discovery. Jangan pernah mencatat password, token, atau isi konten.

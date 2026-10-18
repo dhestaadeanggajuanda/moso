@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\AgendaController;
+use App\Http\Controllers\Admin\ArticleCommentController;
 use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\ArticleWorkflowController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PageBuilderController;
@@ -22,7 +24,14 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-        Route::resource('articles', ArticleController::class)->except('show');
+        Route::resource('articles', ArticleController::class);
+        // Alur persetujuan (Fase 5): status hanya berubah lewat endpoint ini.
+        Route::post('articles/{article}/transitions', [ArticleWorkflowController::class, 'store'])
+            ->middleware('throttle:30,1')
+            ->name('articles.transitions.store');
+        Route::post('articles/{article}/comments', [ArticleCommentController::class, 'store'])
+            ->middleware('throttle:30,1')
+            ->name('articles.comments.store');
         Route::resource('categories', CategoryController::class)->except('show');
         Route::resource('pages', PageController::class)->except('show');
         Route::get('pages/{page}/builder', [PageBuilderController::class, 'edit'])->name('pages.builder');

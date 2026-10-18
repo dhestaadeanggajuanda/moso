@@ -44,3 +44,28 @@ export type MenuNode = {
     sort_order: number;
     children: MenuNode[];
 };
+
+/** Aksi alur persetujuan yang boleh dipakai pengguna (dihitung ArticlePolicy di server). */
+export type WorkflowAction = {
+    value:
+        | 'submit'
+        | 'approve'
+        | 'request_revision'
+        | 'publish'
+        | 'archive'
+        | 'unarchive';
+    label: string;
+    requires_note: boolean;
+    allows_schedule: boolean;
+};
+
+/** Entri riwayat artikel: komentar atau perubahan status. Teks polos. */
+export type ArticleHistoryEntry = {
+    id: number;
+    type: 'comment' | 'status_change';
+    from: StatusValue | null;
+    to: StatusValue | null;
+    body: string | null;
+    user: string;
+    created_at: string | null;
+};

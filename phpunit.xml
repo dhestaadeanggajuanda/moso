@@ -37,5 +37,6 @@
         <!-- Tes 2FA mengaktifkan penegakan secara eksplisit; tes lain tidak boleh bergantung pada .env. -->
         <env name="SECURITY_ENFORCE_2FA" value="false" force="true"/>
         <env name="INERTIA_SSR_ENABLED" value="false" force="true"/>
+        <env name="LOG_AUDIT_STACK" value="null" force="true"/>
     </php>
 </phpunit>

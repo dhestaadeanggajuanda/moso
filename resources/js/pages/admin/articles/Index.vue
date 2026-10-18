@@ -22,7 +22,7 @@ type ArticleRow = {
     categories: string[];
     published_at: string | null;
     updated_at: string | null;
-    can: { update: boolean; delete: boolean };
+    can: { view: boolean; update: boolean; delete: boolean };
 };
 
 const props = defineProps<{
@@ -30,6 +30,8 @@ const props = defineProps<{
     filters: { search?: string; status?: string };
     statuses: Option[];
     can: { create: boolean };
+    /** Jumlah artikel yang menunggu tindakan pengguna; null bila bukan tugasnya. */
+    queue: { submitted: number | null; ready_to_publish: number | null };
 }>();
 
 defineOptions({
@@ -73,6 +75,59 @@ function applyFilters(): void {
                 </Button>
             </template>
         </PageHeader>
+
+        <nav
+            v-if="queue.submitted !== null || queue.ready_to_publish !== null"
+            aria-label="Antrean persetujuan"
+            class="flex flex-wrap gap-2"
+        >
+            <Button
+                v-if="queue.submitted !== null"
+                :variant="
+                    filters.status === 'submitted' ? 'default' : 'outline'
+                "
+                size="sm"
+                as-child
+            >
+                <Link
+                    :href="
+                        ArticleController.index({
+                            query: { status: 'submitted' },
+                        })
+                    "
+                >
+                    Menunggu review
+                    <span
+                        class="rounded-full bg-muted px-1.5 text-xs text-foreground tabular-nums"
+                        >{{ queue.submitted }}</span
+                    >
+                </Link>
+            </Button>
+            <Button
+                v-if="queue.ready_to_publish !== null"
+                :variant="
+                    filters.status === 'ready_to_publish'
+                        ? 'default'
+                        : 'outline'
+                "
+                size="sm"
+                as-child
+            >
+                <Link
+                    :href="
+                        ArticleController.index({
+                            query: { status: 'ready_to_publish' },
+                        })
+                    "
+                >
+                    Siap terbit
+                    <span
+                        class="rounded-full bg-muted px-1.5 text-xs text-foreground tabular-nums"
+                        >{{ queue.ready_to_publish }}</span
+                    >
+                </Link>
+            </Button>
+        </nav>
 
         <form
             role="search"
@@ -120,7 +175,13 @@ function applyFilters(): void {
                     class="space-y-2 rounded-lg border p-4"
                 >
                     <div class="flex items-start justify-between gap-3">
-                        <p class="font-medium">{{ article.title }}</p>
+                        <Link
+                            v-if="article.can.view"
+                            :href="ArticleController.show(article.id)"
+                            class="font-medium hover:underline"
+                            >{{ article.title }}</Link
+                        >
+                        <p v-else class="font-medium">{{ article.title }}</p>
                         <StatusBadge :status="article.status" />
                     </div>
                     <p class="text-sm text-muted-foreground">
@@ -178,7 +239,15 @@ function applyFilters(): void {
                             class="border-t"
                         >
                             <td class="px-4 py-3">
-                                <p class="font-medium">{{ article.title }}</p>
+                                <Link
+                                    v-if="article.can.view"
+                                    :href="ArticleController.show(article.id)"
+                                    class="font-medium hover:underline"
+                                    >{{ article.title }}</Link
+                                >
+                                <p v-else class="font-medium">
+                                    {{ article.title }}
+                                </p>
                                 <p
                                     v-if="article.categories.length"
                                     class="text-xs text-muted-foreground"

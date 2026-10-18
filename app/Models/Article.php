@@ -15,12 +15,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
 /**
  * `status` dan `author_id` sengaja tidak fillable: penulis diisi dari pengguna
- * yang login, dan status hanya berubah lewat alur persetujuan (Fase 5).
+ * yang login, dan status hanya berubah lewat App\Services\Workflow\ArticleWorkflow.
  *
  * @property int $id
  * @property int $author_id
@@ -37,6 +38,7 @@ use Illuminate\Support\Facades\Storage;
  * @property CarbonImmutable|null $deleted_at
  * @property-read User $author
  * @property-read Collection<int, Category> $categories
+ * @property-read Collection<int, ArticleComment> $comments
  * @property-read string|null $image_url
  */
 #[Fillable(['title', 'slug', 'excerpt', 'body', 'image_path', 'image_alt'])]
@@ -79,6 +81,16 @@ class Article extends Model
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class);
+    }
+
+    /**
+     * Riwayat alur persetujuan (komentar dan perubahan status), terlama dulu.
+     *
+     * @return HasMany<ArticleComment, $this>
+     */
+    public function comments(): HasMany
+    {
+        return $this->hasMany(ArticleComment::class)->oldest()->oldest('id');
     }
 
     /**

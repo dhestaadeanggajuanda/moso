@@ -136,7 +136,8 @@ return [
      *
      * To enable, set to true, and then create listeners to watch these events.
      */
-    'events_enabled' => false,
+    // Diaktifkan untuk jejak audit perubahan peran/permission (OWASP A09, App\Listeners\LogPermissionChanges).
+    'events_enabled' => true,
 
     /*
      * Teams Feature.

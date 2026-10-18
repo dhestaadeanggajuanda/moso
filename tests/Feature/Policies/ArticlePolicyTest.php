@@ -59,3 +59,37 @@ test('nobody may force delete an article except through super admin bypass', fun
     expect(userWithRole(RoleName::Approver)->can('forceDelete', $article))->toBeFalse()
         ->and(userWithRole(RoleName::SuperAdmin)->can('forceDelete', $article))->toBeTrue();
 });
+
+test('workflow abilities follow role, status, and authorship', function (RoleName $role, string $ability, ArticleStatus $status, bool $ownArticle, bool $allowed) {
+    $user = userWithRole($role);
+    $article = Article::factory()
+        ->when($ownArticle, fn ($factory) => $factory->for($user, 'author'))
+        ->status($status)
+        ->create();
+
+    expect($user->can($ability, $article))->toBe($allowed);
+})->with([
+    'kontributor submits own draft' => [RoleName::Kontributor, 'submit', ArticleStatus::Draft, true, true],
+    'kontributor resubmits own revision' => [RoleName::Kontributor, 'submit', ArticleStatus::RevisionRequired, true, true],
+    'kontributor cannot resubmit while in review' => [RoleName::Kontributor, 'submit', ArticleStatus::Submitted, true, false],
+    'kontributor cannot submit another author\'s draft' => [RoleName::Kontributor, 'submit', ArticleStatus::Draft, false, false],
+    'editor submits on behalf of an author' => [RoleName::Editor, 'submit', ArticleStatus::Draft, false, true],
+    'editor approves another author\'s article' => [RoleName::Editor, 'approve', ArticleStatus::Submitted, false, true],
+    'editor cannot approve own article' => [RoleName::Editor, 'approve', ArticleStatus::Submitted, true, false],
+    'editor cannot approve a draft' => [RoleName::Editor, 'approve', ArticleStatus::Draft, false, false],
+    'approver may also approve' => [RoleName::Approver, 'approve', ArticleStatus::Submitted, false, true],
+    'kontributor cannot approve' => [RoleName::Kontributor, 'approve', ArticleStatus::Submitted, false, false],
+    'editor requests revision in review' => [RoleName::Editor, 'requestRevision', ArticleStatus::Submitted, false, true],
+    'editor requests revision when ready' => [RoleName::Editor, 'requestRevision', ArticleStatus::ReadyToPublish, false, true],
+    'kontributor cannot request revision' => [RoleName::Kontributor, 'requestRevision', ArticleStatus::Submitted, true, false],
+    'approver publishes another author\'s article' => [RoleName::Approver, 'publish', ArticleStatus::ReadyToPublish, false, true],
+    'approver cannot publish own article' => [RoleName::Approver, 'publish', ArticleStatus::ReadyToPublish, true, false],
+    'approver cannot publish before approval' => [RoleName::Approver, 'publish', ArticleStatus::Submitted, false, false],
+    'editor cannot publish' => [RoleName::Editor, 'publish', ArticleStatus::ReadyToPublish, false, false],
+    'approver archives a published article' => [RoleName::Approver, 'archive', ArticleStatus::Published, false, true],
+    'editor cannot archive' => [RoleName::Editor, 'archive', ArticleStatus::Published, false, false],
+    'approver republishes an archived article' => [RoleName::Approver, 'unarchive', ArticleStatus::Archived, false, true],
+    'kontributor comments on own article' => [RoleName::Kontributor, 'comment', ArticleStatus::Submitted, true, true],
+    'kontributor cannot comment on another author\'s article' => [RoleName::Kontributor, 'comment', ArticleStatus::Submitted, false, false],
+    'editor comments on any article' => [RoleName::Editor, 'comment', ArticleStatus::Submitted, false, true],
+]);

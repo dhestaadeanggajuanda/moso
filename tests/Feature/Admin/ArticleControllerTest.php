@@ -3,6 +3,7 @@
 use App\Enums\ArticleStatus;
 use App\Enums\RoleName;
 use App\Models\Article;
+use App\Models\ArticleComment;
 use App\Models\Category;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -183,5 +184,67 @@ describe('destroy', function () {
             ->assertRedirect(route('admin.articles.index'));
 
         $this->assertSoftDeleted($article);
+    });
+});
+
+describe('show', function () {
+    it('shows an editor the review actions and history of a submitted article', function () {
+        $article = Article::factory()->status(ArticleStatus::Submitted)->create();
+        ArticleComment::factory()->for($article)->statusChange(ArticleStatus::Draft, ArticleStatus::Submitted)->create();
+
+        $this->actingAs(userWithRole(RoleName::Editor))
+            ->get(route('admin.articles.show', $article))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/articles/Show')
+                ->where('actions.0.value', 'approve')
+                ->where('actions.1.value', 'request_revision')
+                ->where('actions.1.requires_note', true)
+                ->has('actions', 2)
+                ->has('history', 1)
+                ->where('history.0.to.value', 'submitted'));
+    });
+
+    it('shows the author their submitted article without review actions', function () {
+        $kontributor = userWithRole(RoleName::Kontributor);
+        $article = Article::factory()->for($kontributor, 'author')->status(ArticleStatus::Submitted)->create();
+
+        $this->actingAs($kontributor)
+            ->get(route('admin.articles.show', $article))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('actions', [])
+                ->where('can.update', false)
+                ->where('can.comment', true));
+    });
+
+    it('hides another author\'s article from a kontributor', function () {
+        $this->actingAs(userWithRole(RoleName::Kontributor))
+            ->get(route('admin.articles.show', Article::factory()->create()))
+            ->assertForbidden();
+    });
+});
+
+describe('edit', function () {
+    it('shows the author the latest revision note while revision is required', function () {
+        $kontributor = userWithRole(RoleName::Kontributor);
+        $article = Article::factory()->for($kontributor, 'author')->status(ArticleStatus::RevisionRequired)->create();
+        ArticleComment::factory()->for($article)->statusChange(ArticleStatus::Submitted, ArticleStatus::RevisionRequired)->create(['body' => 'Catatan lama']);
+        ArticleComment::factory()->for($article)->statusChange(ArticleStatus::Submitted, ArticleStatus::RevisionRequired)->create(['body' => 'Lengkapi lokasi penyaluran.']);
+
+        $this->actingAs($kontributor)
+            ->get(route('admin.articles.edit', $article))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('article.revision_note.body', 'Lengkapi lokasi penyaluran.')
+                ->where('article.actions.0.value', 'submit'));
+    });
+
+    it('shows no revision note once the article is back in draft', function () {
+        $kontributor = userWithRole(RoleName::Kontributor);
+        $article = Article::factory()->for($kontributor, 'author')->create();
+
+        $this->actingAs($kontributor)
+            ->get(route('admin.articles.edit', $article))
+            ->assertInertia(fn (Assert $page) => $page->where('article.revision_note', null));
     });
 });

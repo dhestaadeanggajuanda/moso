@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ArticleAction;
+use App\Enums\ArticleCommentType;
 use App\Enums\ArticleStatus;
 use App\Enums\PermissionName;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ArticleRequest;
 use App\Models\Article;
+use App\Models\ArticleComment;
 use App\Models\Category;
 use App\Models\User;
 use App\Services\Content\HtmlSanitizer;
 use App\Services\Storage\SecureUploadService;
+use App\Services\Workflow\ArticleWorkflow;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,6 +58,7 @@ class ArticleController extends Controller
                 'published_at' => $article->published_at?->toIso8601String(),
                 'updated_at' => $article->updated_at?->toIso8601String(),
                 'can' => [
+                    'view' => $user->can('view', $article),
                     'update' => $user->can('update', $article),
                     'delete' => $user->can('delete', $article),
                 ],
@@ -64,6 +69,57 @@ class ArticleController extends Controller
             'filters' => (object) $filters,
             'statuses' => ArticleStatus::options(),
             'can' => ['create' => $user->can('create', Article::class)],
+            'queue' => $this->reviewQueue($user),
+        ]);
+    }
+
+    /**
+     * Halaman tinjau: pratinjau isi, riwayat persetujuan, dan tombol aksi yang
+     * boleh dipakai pengguna (dihitung Policy di server, bukan di frontend).
+     */
+    public function show(Request $request, Article $article, ArticleWorkflow $workflow): Response
+    {
+        Gate::authorize('view', $article);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        $article->load(['author:id,name', 'categories:id,name', 'comments.user:id,name']);
+
+        return Inertia::render('admin/articles/Show', [
+            'article' => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'excerpt' => $article->excerpt,
+                // Sudah disanitasi saat disimpan (HtmlSanitizer), aman untuk v-html.
+                'body' => $article->body,
+                'image_url' => $article->image_url,
+                'image_alt' => $article->image_alt,
+                'status' => ['value' => $article->status->value, 'label' => $article->status->label()],
+                'author' => $article->author->name,
+                'categories' => $article->categories->pluck('name'),
+                'published_at' => $article->published_at?->toIso8601String(),
+                'updated_at' => $article->updated_at?->toIso8601String(),
+                'public_url' => $article->status === ArticleStatus::Published && $article->published_at?->lte(now())
+                    ? route('site.articles.show', $article->slug)
+                    : null,
+            ],
+            'history' => $article->comments->map(fn (ArticleComment $entry) => [
+                'id' => $entry->id,
+                'type' => $entry->type->value,
+                'from' => $entry->from_status ? ['value' => $entry->from_status->value, 'label' => $entry->from_status->label()] : null,
+                'to' => $entry->to_status ? ['value' => $entry->to_status->value, 'label' => $entry->to_status->label()] : null,
+                // Teks polos: ditampilkan dengan interpolasi, bukan v-html.
+                'body' => $entry->body,
+                'user' => $entry->user->name,
+                'created_at' => $entry->created_at?->toIso8601String(),
+            ])->values(),
+            'actions' => $this->actionOptions($workflow->availableActions($article, $user)),
+            'can' => [
+                'update' => $user->can('update', $article),
+                'delete' => $user->can('delete', $article),
+                'comment' => $user->can('comment', $article),
+            ],
         ]);
     }
 
@@ -96,9 +152,12 @@ class ArticleController extends Controller
         return to_route('admin.articles.edit', $article);
     }
 
-    public function edit(Request $request, Article $article): Response
+    public function edit(Request $request, Article $article, ArticleWorkflow $workflow): Response
     {
         Gate::authorize('update', $article);
+
+        /** @var User $user */
+        $user = $request->user();
 
         $article->load('categories:id');
 
@@ -114,7 +173,9 @@ class ArticleController extends Controller
                 'status' => ['value' => $article->status->value, 'label' => $article->status->label()],
                 'category_ids' => $article->categories->pluck('id'),
                 'updated_at' => $article->updated_at?->toIso8601String(),
-                'can' => ['delete' => $request->user()?->can('delete', $article) ?? false],
+                'can' => ['delete' => $user->can('delete', $article)],
+                'actions' => $this->actionOptions($workflow->availableActions($article, $user)),
+                'revision_note' => $this->latestRevisionNote($article),
             ],
             'categories' => $this->categoryOptions(),
         ]);
@@ -168,6 +229,67 @@ class ArticleController extends Controller
         $data['body'] = $sanitizer->sanitize($data['body']);
 
         return $data;
+    }
+
+    /**
+     * Jumlah artikel yang menunggu tindakan pengguna ini (null bila bukan tugasnya).
+     *
+     * @return array{submitted: int|null, ready_to_publish: int|null}
+     */
+    private function reviewQueue(User $user): array
+    {
+        $count = fn (ArticleStatus $status): int => Article::query()->where('status', $status)->count();
+
+        return [
+            'submitted' => $user->can(PermissionName::ArticlesReview) || $user->can(PermissionName::ArticlesPublish)
+                ? $count(ArticleStatus::Submitted)
+                : null,
+            'ready_to_publish' => $user->can(PermissionName::ArticlesPublish)
+                ? $count(ArticleStatus::ReadyToPublish)
+                : null,
+        ];
+    }
+
+    /**
+     * Catatan revisi terakhir, ditampilkan di form ubah selama artikel perlu revisi
+     * supaya penulis langsung tahu apa yang harus diperbaiki.
+     *
+     * @return array{body: string, user: string, created_at: string|null}|null
+     */
+    private function latestRevisionNote(Article $article): ?array
+    {
+        if ($article->status !== ArticleStatus::RevisionRequired) {
+            return null;
+        }
+
+        $entry = ArticleComment::query()
+            ->whereBelongsTo($article)
+            ->where('type', ArticleCommentType::StatusChange)
+            ->where('to_status', ArticleStatus::RevisionRequired)
+            ->whereNotNull('body')
+            ->with('user:id,name')
+            ->latest('id')
+            ->first();
+
+        return $entry ? [
+            'body' => (string) $entry->body,
+            'user' => $entry->user->name,
+            'created_at' => $entry->created_at?->toIso8601String(),
+        ] : null;
+    }
+
+    /**
+     * @param  list<ArticleAction>  $actions
+     * @return list<array{value: string, label: string, requires_note: bool, allows_schedule: bool}>
+     */
+    private function actionOptions(array $actions): array
+    {
+        return array_map(fn (ArticleAction $action) => [
+            'value' => $action->value,
+            'label' => $action->label(),
+            'requires_note' => $action->requiresNote(),
+            'allows_schedule' => $action->allowsSchedule(),
+        ], $actions);
     }
 
     /**
