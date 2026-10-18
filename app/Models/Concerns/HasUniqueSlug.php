@@ -44,8 +44,22 @@ trait HasUniqueSlug
         return $slug;
     }
 
+    /**
+     * Slug yang tidak boleh dipakai model ini (mis. bentrok dengan route).
+     *
+     * @return list<string>
+     */
+    protected function reservedSlugs(): array
+    {
+        return [];
+    }
+
     private function slugTaken(string $slug): bool
     {
+        if (in_array($slug, $this->reservedSlugs(), true)) {
+            return true;
+        }
+
         // Tanpa global scope (termasuk SoftDeletingScope): index unik di database juga tidak mengenal scope.
         $query = static::query()->withoutGlobalScopes()->where('slug', $slug);
 

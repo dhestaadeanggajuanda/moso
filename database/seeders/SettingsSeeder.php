@@ -22,9 +22,16 @@ class SettingsSeeder extends Seeder
         'contact.address' => 'Jalan ..., Kota Singkawang, Kalimantan Barat',
         'contact.phone' => '',
         'contact.email' => '',
+        'contact.hours' => '',
+        // Kanal pengaduan nasional SP4N-LAPOR!; dapat diganti kanal milik dinas.
+        'contact.complaint_url' => 'https://www.lapor.go.id',
+        // Path logo di disk s3 (mis. branding/logo-pemkot.webp).
+        'site.logo_pemkot' => '',
+        'site.logo_dinas' => '',
         'social.facebook' => '',
         'social.instagram' => '',
         'social.youtube' => '',
+        'site.home_page' => 'beranda',
         'theme.active' => 'TemaModern',
     ];
 

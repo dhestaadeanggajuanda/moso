@@ -3,6 +3,9 @@
 use App\Enums\RoleName;
 use App\Models\Category;
 use App\Models\Page;
+use App\Services\PageBuilder\Blocks\HeroBannerBlock;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -47,7 +50,7 @@ it('shows the builder with the registered block catalog', function () {
         ->get(route('admin.pages.builder', $page))
         ->assertInertia(fn (Assert $inertia) => $inertia
             ->component('admin/pages/Builder')
-            ->has('catalog', 4)
+            ->has('catalog', 6)
             ->where('catalog.1.type', 'NewsGridHybrid')
             ->where('catalog.1.defaults.fetch_media_center', false));
 });
@@ -136,4 +139,90 @@ it('rejects duplicate block ids and too many blocks', function () {
             'blocks' => array_map(fn () => block('RichText', ['html' => 'x']), range(1, 51)),
         ])
         ->assertInvalid(['blocks' => 'maksimal 50 blok']);
+});
+
+it('uploads a banner photo as a re-encoded webp on the public disk', function () {
+    Storage::fake('s3');
+    $page = Page::factory()->create();
+
+    $response = $this->actingAs(userWithRole(RoleName::Editor))
+        ->post(route('admin.pages.builder.images', $page), [
+            'image' => UploadedFile::fake()->image('kegiatan.jpg', 1200, 800),
+        ])
+        ->assertCreated();
+
+    $path = $response->json('path');
+    expect($path)->toMatch(HeroBannerBlock::IMAGE_PATH_PATTERN);
+    Storage::disk('s3')->assertExists($path);
+});
+
+it('forbids a kontributor from uploading builder photos', function () {
+    Storage::fake('s3');
+    $page = Page::factory()->create();
+
+    $this->actingAs(userWithRole(RoleName::Kontributor))
+        ->post(route('admin.pages.builder.images', $page), [
+            'image' => UploadedFile::fake()->image('kegiatan.jpg', 1200, 800),
+        ])
+        ->assertForbidden();
+
+    expect(Storage::disk('s3')->allFiles())->toBe([]);
+});
+
+it('rejects builder uploads that are not photos', function () {
+    Storage::fake('s3');
+    $page = Page::factory()->create();
+
+    $this->actingAs(userWithRole(RoleName::Editor))
+        ->postJson(route('admin.pages.builder.images', $page), [
+            'image' => UploadedFile::fake()->create('logo.svg', 4, 'image/svg+xml'),
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors(['image']);
+
+    expect(Storage::disk('s3')->allFiles())->toBe([]);
+});
+
+it('rejects a banner photo path that the uploader did not produce', function () {
+    $page = Page::factory()->create();
+
+    $this->actingAs(userWithRole(RoleName::Editor))
+        ->put(route('admin.pages.blocks.update', $page), ['blocks' => [
+            block('HeroBanner', ['heading' => 'Halo', 'variant' => 'primary', 'show_search' => true, 'image_path' => 'private/sakip/laporan.pdf']),
+        ]])
+        ->assertInvalid(['blocks.0.props.image_path' => 'Foto banner tidak valid. Unggah ulang fotonya.']);
+});
+
+it('stores quick access links with only their label, url, and icon', function () {
+    $page = Page::factory()->create();
+    $links = block('AksesCepat', ['title' => null, 'items' => [
+        ['label' => 'PPID', 'url' => '/ppid', 'icon' => 'dokumen', 'onclick' => 'alert(1)'],
+        ['label' => 'Pengaduan', 'url' => 'https://www.lapor.go.id', 'icon' => 'pengaduan'],
+    ]]);
+
+    $this->actingAs(userWithRole(RoleName::Editor))
+        ->put(route('admin.pages.blocks.update', $page), ['blocks' => [$links]])
+        ->assertRedirect(route('admin.pages.builder', $page));
+
+    expect($page->fresh()->content_blocks[0]['props']['items'])->toBe([
+        ['label' => 'PPID', 'url' => '/ppid', 'icon' => 'dokumen'],
+        ['label' => 'Pengaduan', 'url' => 'https://www.lapor.go.id', 'icon' => 'pengaduan'],
+    ]);
+});
+
+it('rejects quick access links with unsafe urls or unknown icons', function () {
+    $page = Page::factory()->create();
+
+    $this->actingAs(userWithRole(RoleName::Editor))
+        ->put(route('admin.pages.blocks.update', $page), ['blocks' => [
+            block('AksesCepat', ['title' => null, 'items' => [
+                ['label' => 'Klik', 'url' => 'javascript:alert(1)', 'icon' => 'roket'],
+            ]]),
+        ]])
+        ->assertInvalid([
+            'blocks.0.props.items.0.url' => 'URL harus diawali',
+            'blocks.0.props.items.0.icon',
+        ]);
+
+    expect($page->fresh()->content_blocks)->toBe([]);
 });

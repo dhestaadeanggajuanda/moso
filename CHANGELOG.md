@@ -6,6 +6,15 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Ditambahkan
 
+- Fase 4, renderer publik dan tema:
+    - Pluggable Themes: plugin Vite `virtual:themes` hanya mengompilasi tema di `VITE_THEMES` (JS dan CSS), alias `@theme`, dan `ThemeResolver` (tema halaman → `theme.active` → tema bawaan).
+    - `Core/PageRenderer.vue` merender blok dengan `<component :is>` dari tema aktif; `BlockBoundary` mengisolasi blok yang gagal.
+    - Situs publik: beranda (`site.home_page`), halaman Page Builder `/{slug}`, detail berita `/berita/{slug}`, serta daftar dan detail layanan `/layanan` dan `/layanan/{slug}` dengan pencarian. Halaman publik dirender server (Inertia SSR).
+    - TemaModern: arah visual portal pemda standar yang dipoles modern (acuan jakarta.go.id). Header navy dengan slot logo Pemkot dan dinas, menu bertingkat (desktop dan ponsel), footer kontak dan pengaduan, blok HeroBanner, LayananList, NewsGridHybrid (badge Berita Dinas / Media Center), AgendaKegiatan, RichText, serta tampilan detail berita dan layanan. Font Plus Jakarta Sans di-self-host.
+    - Blok baru LayananList (daftar layanan dengan kolom cari) dan AksesCepat (tautan berikon ke layanan, pengaduan, PPID, E-SAKIP, dan halaman penting lain, diatur pengelola).
+    - HeroBanner kini punya foto latar (unggah dari editor), teks alternatif, dan kolom Cari layanan.
+    - Pengaturan situs baru: `contact.hours`, `contact.complaint_url` (bawaan SP4N-LAPOR!), `site.logo_pemkot`, `site.logo_dinas`.
+    - `PRODUCT.md` (konteks produk untuk skill impeccable).
 - Fase 3, integrasi Media Center dan Page Builder:
     - `MediaCenterApiService` (Http facade) untuk WordPress REST API Media Center Kota, dengan mode tag, kategori, dan pencarian.
     - Cache stale-while-revalidate, retry hanya untuk GET, dan perintah `mediacenter:warm` terjadwal tiap 10 menit.
@@ -25,6 +34,10 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Keamanan
 
+- Halaman, artikel, dan layanan yang belum terbit (termasuk artikel terjadwal) dibalas 404 di situs publik.
+- Tautan dari pengaturan (pengaduan, media sosial) hanya dikirim ke tema bila skemanya aman. Path foto banner dan logo dibatasi ke pola hasil unggahan.
+- Unggah foto Page Builder lewat `SecureUploadService`, dicek Policy halaman dan dibatasi 20/menit.
+- Slug sistem (`layanan`, `berita`, `unduh`, dan lainnya) tidak bisa dipakai halaman, baik diisi manual maupun dibuat otomatis.
 - Permintaan ke Media Center hanya menuju base URL dari config, dengan kata kunci `^[a-z0-9-]{1,50}$` (anti-SSRF). Tautan dan gambar hanya diterima dari host Media Center, dan teksnya diubah menjadi teks polos.
 - `content_blocks` divalidasi terhadap `BlockRegistry`: tipe asing ditolak, props asing dibuang, HTML blok teks disanitasi, dan tautan tombol dibatasi ke URL aman.
 - CSP `img-src` mengizinkan host gambar Media Center saja (bukan untuk script).

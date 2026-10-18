@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Enums\PageStatus;
 use App\Models\Page;
+use App\Support\ReservedSlugs;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,15 +15,6 @@ use Illuminate\Validation\Rule;
  */
 class PageRequest extends FormRequest
 {
-    /**
-     * Slug yang bentrok dengan route aplikasi atau modul publik.
-     */
-    public const RESERVED_SLUGS = [
-        'admin', 'api', 'agenda', 'berita', 'build', 'dashboard', 'email', 'forgot-password',
-        'layanan', 'login', 'logout', 'ppid', 'register', 'reset-password', 'sakip', 'settings',
-        'storage', 'two-factor-challenge', 'up', 'user',
-    ];
-
     public function authorize(): bool
     {
         $page = $this->page();
@@ -43,10 +35,12 @@ class PageRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'slug' => [
                 'nullable', 'string', 'max:200', 'alpha_dash:ascii',
-                Rule::notIn(self::RESERVED_SLUGS),
+                Rule::notIn(ReservedSlugs::LIST),
                 Rule::unique(Page::class)->ignore($this->page()),
             ],
             'status' => ['required', Rule::enum(PageStatus::class)],
+            // Kosong = ikut tema aktif situs. Hanya tema yang dikompilasi yang boleh dipilih.
+            'theme' => ['nullable', 'string', Rule::in(config('themes.enabled'))],
             'meta_description' => ['nullable', 'string', 'max:300'],
         ];
     }
@@ -64,7 +58,7 @@ class PageRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return ['title' => 'judul', 'meta_description' => 'deskripsi meta'];
+        return ['title' => 'judul', 'meta_description' => 'deskripsi meta', 'theme' => 'tema'];
     }
 
     private function page(): ?Page

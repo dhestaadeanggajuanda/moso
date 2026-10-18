@@ -4,16 +4,46 @@ import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
+import { loadEnv } from 'vite';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import {
+    parseThemes,
+    themeCssEntries,
+    themePath,
+    themes,
+} from './vite/plugins/themes';
+
+// Tema yang dikompilasi; tema pertama menjadi bawaan dan target alias @theme.
+const enabledThemes = parseThemes(
+    process.env.VITE_THEMES ?? loadEnv('', process.cwd(), 'VITE_').VITE_THEMES,
+);
 
 export default defineConfig({
+    resolve: {
+        alias: {
+            '@theme': themePath(enabledThemes[0]),
+        },
+    },
     plugins: lazyPlugins(() => [
+        themes({ enabled: enabledThemes }),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.ts'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.ts',
+                ...themeCssEntries(enabledThemes),
+            ],
             refresh: true,
+            // Font di-self-host: diunduh saat build, disajikan dari origin sendiri.
             fonts: [
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
+                }),
+                // TemaModern (lihat config/themes.php → fonts).
+                bunny('Plus Jakarta Sans', {
+                    alias: 'jakarta',
+                    weights: [400, 500, 600, 700, 800],
+                    preload: [{ weight: 400 }, { weight: 700 }],
+                    fallbacks: ['system-ui', 'sans-serif'],
                 }),
             ],
         }),

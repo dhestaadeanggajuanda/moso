@@ -19,10 +19,13 @@ const props = defineProps<{
         slug: string;
         meta_description: string | null;
         status: string;
+        theme: string | null;
         blocks_count: number;
         updated_at: string | null;
+        public_url: string;
     } | null;
     statuses: Option[];
+    themes: string[];
 }>();
 
 defineOptions({
@@ -59,6 +62,15 @@ const formKey = computed(() =>
                 <Button variant="outline" as-child>
                     <Link :href="PageBuilderController.edit(page.id)"
                         >Buka Page Builder</Link
+                    >
+                </Button>
+                <Button
+                    v-if="page.status === 'published'"
+                    variant="ghost"
+                    as-child
+                >
+                    <a :href="page.public_url" target="_blank" rel="noopener"
+                        >Lihat di situs</a
                     >
                 </Button>
             </template>
@@ -111,6 +123,21 @@ const formKey = computed(() =>
                     </option>
                 </NativeSelect>
                 <InputError :message="errors.status" />
+            </div>
+
+            <div class="grid gap-1.5">
+                <Label for="theme">Tema</Label>
+                <NativeSelect
+                    id="theme"
+                    name="theme"
+                    :default-value="page?.theme ?? ''"
+                >
+                    <option value="">Ikuti tema aktif situs</option>
+                    <option v-for="theme in themes" :key="theme" :value="theme">
+                        {{ theme }}
+                    </option>
+                </NativeSelect>
+                <InputError :message="errors.theme" />
             </div>
 
             <div class="grid gap-1.5">

@@ -26,4 +26,5 @@
 
 - Gunakan skill `impeccable` untuk merancang dan mengaudit tema publik (`/impeccable craft`, `adapt`, `audit`, `polish`). Konteks produk ada di `PRODUCT.md`.
 - Token desain (warna, font, radius) didefinisikan sekali di `Themes/{Tema}/theme.css` lewat `@theme` Tailwind 4. Jangan hardcode warna hex di komponen.
-- Font di-self-host, tanpa CDN font eksternal.
+- Font di-self-host lewat opsi `fonts` laravel-vite-plugin (diunduh saat build), tanpa CDN font saat runtime.
+- Tampilan halaman non-blok (detail berita, daftar dan detail layanan) ada di `Themes/{Tema}/Views`; bagian bersama (header, footer, kartu, badge) di `Partials`. Tema tidak menanam path route sendiri: pakai `site.links` dan URL dari data blok.

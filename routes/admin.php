@@ -26,6 +26,9 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
         Route::resource('pages', PageController::class)->except('show');
         Route::get('pages/{page}/builder', [PageBuilderController::class, 'edit'])->name('pages.builder');
         Route::put('pages/{page}/blocks', [PageBuilderController::class, 'update'])->name('pages.blocks.update');
+        Route::post('pages/{page}/builder/images', [PageBuilderController::class, 'uploadImage'])
+            ->middleware('throttle:20,1')
+            ->name('pages.builder.images');
         Route::resource('agendas', AgendaController::class)->except('show');
 
         // Modul kepatuhan: PPID, Standar Pelayanan, E-SAKIP, dan Menu Builder.

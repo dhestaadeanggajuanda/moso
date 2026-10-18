@@ -20,6 +20,7 @@ defineProps<{
     catalog: BlockCatalogEntry[];
     categories: Option[];
     mediaCenterModes: Option[];
+    imageBaseUrl: string;
 }>();
 
 defineOptions({
@@ -54,6 +55,7 @@ defineOptions({
             :catalog="catalog"
             :categories="categories"
             :media-center-modes="mediaCenterModes"
+            :image-base-url="imageBaseUrl"
         />
     </div>
 </template>

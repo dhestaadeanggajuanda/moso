@@ -12,7 +12,8 @@ void createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
-            case name === 'Welcome':
+            // Situs publik memakai layout dari tema aktif (Themes/{Tema}/Layouts).
+            case name.startsWith('site/'):
                 return null;
             case name.startsWith('auth/'):
                 return AuthLayout;

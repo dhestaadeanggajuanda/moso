@@ -10,17 +10,18 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 
 ## Lokasi kode
 
-| Area                                  | Lokasi                                                                                      |
-| ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Route panel admin                     | `routes/admin.php`: prefix `/admin`, nama `admin.*`, middleware `auth` + `verified`         |
-| Route API publik read-only            | `routes/api.php`, prefix `/api/v1`                                                          |
-| Controller admin / API / situs publik | `app/Http/Controllers/{Admin,Api/V1,Site}`                                                  |
-| Enum status dan kategori              | `app/Enums` (string-backed, dengan method `label()` berbahasa Indonesia)                    |
-| Logika domain                         | `app/Services/{Storage,Content,MediaCenter,News,PageBuilder,Workflow}`                      |
-| Halaman Inertia admin                 | `resources/js/pages/admin/**` (memakai komponen shadcn-vue di `resources/js/components/ui`) |
-| Page Builder (editor)                 | `resources/js/Builder/` + Pinia store `resources/js/stores/builder.ts`                      |
-| Renderer publik                       | `resources/js/Core/PageRenderer.vue`                                                        |
-| Tema                                  | `resources/js/Themes/{NamaTema}/{Layouts,Components,Partials}`                              |
+| Area                                  | Lokasi                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Route panel admin                     | `routes/admin.php`: prefix `/admin`, nama `admin.*`, middleware `auth` + `verified`                       |
+| Route API publik read-only            | `routes/api.php`, prefix `/api/v1`                                                                        |
+| Controller admin / API / situs publik | `app/Http/Controllers/{Admin,Api/V1,Site}`                                                                |
+| Enum status dan kategori              | `app/Enums` (string-backed, dengan method `label()` berbahasa Indonesia)                                  |
+| Logika domain                         | `app/Services/{Storage,Content,MediaCenter,News,PageBuilder,Workflow}`                                    |
+| Halaman Inertia admin                 | `resources/js/pages/admin/**` (memakai komponen shadcn-vue di `resources/js/components/ui`)               |
+| Page Builder (editor)                 | `resources/js/Builder/` + Pinia store `resources/js/stores/builder.ts`                                    |
+| Renderer publik                       | `resources/js/Core/PageRenderer.vue`                                                                      |
+| Tema                                  | `resources/js/Themes/{NamaTema}/{Layouts,Components,Views,Partials}` + `theme.css`                        |
+| Halaman situs publik                  | `resources/js/pages/site/*` (memuat `Layouts/SiteLayout` dan `Views/*` tema aktif lewat `Core/themes.ts`) |
 
 ## Page Builder
 
@@ -28,6 +29,8 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 - Tipe blok wajib terdaftar di `App\Services\PageBuilder\BlockRegistry`, beserta aturan validasi props-nya. Blok yang tidak terdaftar ditolak saat disimpan.
 - Data dinamis (berita, agenda, layanan) **tidak** disimpan di JSON. Data itu disuntikkan saat render oleh `BlockHydrator` ke key `data`.
 - Komponen tema untuk blok harus bernama sama dengan `type` dan berada di `Themes/{Tema}/Components/{type}.vue`.
+- Tema hanya dikompilasi bila terdaftar di `VITE_THEMES` (plugin `vite/plugins/themes.ts`, modul `virtual:themes`). `config/themes.php` membaca variabel yang sama; `pages.theme` divalidasi terhadapnya. Font tema didaftarkan di opsi `fonts` `vite.config.ts` dan aliasnya di `config/themes.php` → `fonts`.
+- Data situs untuk tema (nama, logo, kontak, menu, `links`) hanya lewat `App\Support\SiteContext`; tautan dari pengaturan wajib lolos `SafeUrl`.
 - Blok `NewsGridHybrid` menggabungkan artikel lokal dengan Media Center bila `props.fetch_media_center = true`. Kata kunci diambil dari `props.media_center_keyword`.
 - Menambah tipe blok baru: buat kelas di `app/Services/PageBuilder/Blocks` (turunan `AbstractBlock`), daftarkan di `BlockRegistry::BLOCKS`, tambahkan tipenya di `resources/js/types/blocks.ts`, ikon/ringkasan di `resources/js/Builder/blockDefinitions.ts`, inspector di `resources/js/Builder/inspectors`, dan komponen tema dengan nama yang sama. Nilai bawaan props hanya didefinisikan di server (`defaults()`).
 - Integrasi Media Center hanya lewat `App\Services\MediaCenter\MediaCenterApiService` (Http facade, cache stale-while-revalidate, tidak pernah melempar ke pemanggil). Berita dari mana pun dinormalisasi menjadi `App\Services\News\NewsItem` (teks polos).

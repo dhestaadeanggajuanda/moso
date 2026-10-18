@@ -1,5 +1,12 @@
 import type { LucideIcon } from '@lucide/vue';
-import { CalendarDays, Image, Newspaper, Type } from '@lucide/vue';
+import {
+    CalendarDays,
+    ClipboardList,
+    Image,
+    LayoutGrid,
+    Newspaper,
+    Type,
+} from '@lucide/vue';
 import type { AnyPageBlock, BlockType } from '@/types/blocks';
 
 /**
@@ -11,6 +18,8 @@ export const blockIcons: Record<BlockType, LucideIcon> = {
     NewsGridHybrid: Newspaper,
     AgendaKegiatan: CalendarDays,
     RichText: Type,
+    LayananList: ClipboardList,
+    AksesCepat: LayoutGrid,
 };
 
 const modeLabels = {
@@ -46,6 +55,15 @@ export function blockSummary(block: AnyPageBlock): string {
         }
         case 'AgendaKegiatan':
             return `${block.props.limit} agenda terdekat`;
+        case 'LayananList':
+            return block.props.show_search
+                ? `${block.props.limit} layanan · dengan kolom cari`
+                : `${block.props.limit} layanan`;
+        case 'AksesCepat':
+            return (
+                block.props.items.map((item) => item.label).join(' · ') ||
+                'Belum ada tautan'
+            );
         case 'RichText': {
             const text = block.props.html.replace(/<[^>]*>/g, ' ').trim();
 

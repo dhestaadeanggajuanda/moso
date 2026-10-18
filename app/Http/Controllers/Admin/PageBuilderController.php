@@ -5,11 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\MediaCenterMode;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SavePageBlocksRequest;
+use App\Http\Requests\Admin\UploadBuilderImageRequest;
 use App\Models\Category;
 use App\Models\Page;
 use App\Services\PageBuilder\BlockRegistry;
+use App\Services\PageBuilder\Blocks\HeroBannerBlock;
+use App\Services\Storage\SecureUploadService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,6 +40,8 @@ class PageBuilderController extends Controller
             'categories' => Category::query()->orderBy('name')->get(['name', 'slug'])
                 ->map(fn (Category $category) => ['value' => $category->slug, 'label' => $category->name]),
             'mediaCenterModes' => MediaCenterMode::options(),
+            // Untuk pratinjau foto blok di editor (path + base URL disk s3).
+            'imageBaseUrl' => rtrim(Storage::disk('s3')->url(''), '/'),
         ]);
     }
 
@@ -47,5 +54,18 @@ class PageBuilderController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Susunan halaman disimpan.']);
 
         return to_route('admin.pages.builder', $page);
+    }
+
+    /**
+     * Unggah foto blok. Path hasilnya disimpan di props blok saat susunan disimpan.
+     */
+    public function uploadImage(UploadBuilderImageRequest $request, Page $page, SecureUploadService $uploads): JsonResponse
+    {
+        $path = $uploads->storeImage($request->file('image'), HeroBannerBlock::IMAGE_DIRECTORY);
+
+        return response()->json([
+            'path' => $path,
+            'url' => Storage::disk('s3')->url($path),
+        ], 201);
     }
 }

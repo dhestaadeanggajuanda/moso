@@ -17,7 +17,8 @@ it('sends baseline security headers', function () {
 });
 
 it('sends a nonce based content security policy that matches the inline script', function () {
-    $response = $this->get(route('home'));
+    // Halaman situs publik tidak punya skrip inline; panel (login) punya skrip mode gelap.
+    $response = $this->get(route('login'));
 
     $csp = $response->headers->get('Content-Security-Policy');
 
@@ -58,7 +59,7 @@ it('only sends hsts over https', function () {
 
 it('ignores unknown appearance cookie values', function () {
     $response = $this->withUnencryptedCookie('appearance', "dark';alert(1);//")
-        ->get(route('home'));
+        ->get(route('login'));
 
     expect($response->getContent())
         ->not->toContain('alert(1)')

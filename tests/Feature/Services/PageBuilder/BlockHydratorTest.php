@@ -21,7 +21,7 @@ it('injects news and agenda data while leaving static blocks without data', func
     ]);
 
     $blocks = app(BlockHydrator::class)->hydrate([
-        ['id' => (string) Str::uuid(), 'type' => 'HeroBanner', 'props' => ['heading' => 'Halo']],
+        ['id' => (string) Str::uuid(), 'type' => 'RichText', 'props' => ['html' => '<p>Halo</p>']],
         ['id' => (string) Str::uuid(), 'type' => 'NewsGridHybrid', 'props' => [
             'limit' => 5, 'columns' => 3, 'fetch_media_center' => true, 'media_center_keyword' => 'sosial', 'media_center_mode' => 'tag',
         ]],
@@ -31,7 +31,6 @@ it('injects news and agenda data while leaving static blocks without data', func
 
     expect($blocks)->toHaveCount(3)
         ->and($blocks[0]['data'])->toBeNull()
-        ->and($blocks[0]['props']['variant'])->toBe('primary')
         ->and(array_column($blocks[1]['data']['items'], 'source'))->toBe(['media_center', 'local'])
         ->and(array_column($blocks[2]['data']['items'], 'title'))->toBe(['Rapat Pleno']);
 });

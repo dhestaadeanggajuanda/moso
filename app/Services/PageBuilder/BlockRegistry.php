@@ -3,7 +3,9 @@
 namespace App\Services\PageBuilder;
 
 use App\Services\PageBuilder\Blocks\AgendaKegiatanBlock;
+use App\Services\PageBuilder\Blocks\AksesCepatBlock;
 use App\Services\PageBuilder\Blocks\HeroBannerBlock;
+use App\Services\PageBuilder\Blocks\LayananListBlock;
 use App\Services\PageBuilder\Blocks\NewsGridHybridBlock;
 use App\Services\PageBuilder\Blocks\RichTextBlock;
 use Illuminate\Contracts\Container\Container;
@@ -22,6 +24,8 @@ class BlockRegistry
         NewsGridHybridBlock::class,
         AgendaKegiatanBlock::class,
         RichTextBlock::class,
+        LayananListBlock::class,
+        AksesCepatBlock::class,
     ];
 
     /**

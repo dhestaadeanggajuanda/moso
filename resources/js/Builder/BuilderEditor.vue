@@ -6,7 +6,9 @@ import PageBuilderController from '@/actions/App/Http/Controllers/Admin/PageBuil
 import BlockCanvas from '@/Builder/BlockCanvas.vue';
 import BlockPalette from '@/Builder/BlockPalette.vue';
 import AgendaKegiatanInspector from '@/Builder/inspectors/AgendaKegiatanInspector.vue';
+import AksesCepatInspector from '@/Builder/inspectors/AksesCepatInspector.vue';
 import HeroBannerInspector from '@/Builder/inspectors/HeroBannerInspector.vue';
+import LayananListInspector from '@/Builder/inspectors/LayananListInspector.vue';
 import NewsGridHybridInspector from '@/Builder/inspectors/NewsGridHybridInspector.vue';
 import RichTextInspector from '@/Builder/inspectors/RichTextInspector.vue';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +28,7 @@ const props = defineProps<{
     catalog: BlockCatalogEntry[];
     categories: Option[];
     mediaCenterModes: Option[];
+    imageBaseUrl: string;
 }>();
 
 const store = useBuilderStore();
@@ -37,6 +40,8 @@ const inspectors: Record<BlockType, Component> = {
     NewsGridHybrid: NewsGridHybridInspector,
     AgendaKegiatan: AgendaKegiatanInspector,
     RichText: RichTextInspector,
+    LayananList: LayananListInspector,
+    AksesCepat: AksesCepatInspector,
 };
 
 store.load(props.blocks);
@@ -174,6 +179,8 @@ onUnmounted(() => {
                     :errors="selectedErrors"
                     :categories="categories"
                     :modes="mediaCenterModes"
+                    :page-id="pageId"
+                    :image-base-url="imageBaseUrl"
                 />
             </section>
         </div>

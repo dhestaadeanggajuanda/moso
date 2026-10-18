@@ -39,6 +39,7 @@ class PageController extends Controller
         return Inertia::render('admin/pages/Form', [
             'page' => null,
             'statuses' => PageStatus::options(),
+            'themes' => config('themes.enabled'),
         ]);
     }
 
@@ -61,12 +62,14 @@ class PageController extends Controller
 
         return Inertia::render('admin/pages/Form', [
             'page' => [
-                ...$page->only(['id', 'title', 'slug', 'meta_description']),
+                ...$page->only(['id', 'title', 'slug', 'meta_description', 'theme']),
                 'status' => $page->status->value,
                 'blocks_count' => count($page->content_blocks),
                 'updated_at' => $page->updated_at?->toIso8601String(),
+                'public_url' => route('site.pages.show', $page->slug),
             ],
             'statuses' => PageStatus::options(),
+            'themes' => config('themes.enabled'),
         ]);
     }
 

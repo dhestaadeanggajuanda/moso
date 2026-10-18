@@ -26,6 +26,19 @@ class HandleInertiaRequests extends Middleware
     protected $rootView = 'app';
 
     /**
+     * SSR hanya untuk situs publik (SEO); panel admin dan pengaturan akun dirender di browser.
+     *
+     * @var array<int, string>
+     */
+    protected $withoutSsr = [
+        'admin',
+        'admin/*',
+        'dashboard',
+        'settings',
+        'settings/*',
+    ];
+
+    /**
      * Determines the current asset version.
      *
      * @see https://inertiajs.com/asset-versioning

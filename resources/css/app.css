@@ -4,6 +4,8 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+/* Tema publik punya CSS sendiri (Themes/{Tema}/theme.css). */
+@source not '../js/Themes';
 
 @custom-variant dark (&:is(.dark *));
 

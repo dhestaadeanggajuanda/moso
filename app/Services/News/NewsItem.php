@@ -35,8 +35,7 @@ final readonly class NewsItem
             source: self::SOURCE_LOCAL,
             title: $article->title,
             excerpt: $article->excerpt,
-            // Route publik artikel didaftarkan di Fase 4 dengan path yang sama.
-            url: url('/berita/'.$article->slug),
+            url: route('site.articles.show', $article->slug),
             imageUrl: $article->image_url,
             imageAlt: $article->image_alt,
             publishedAt: $article->published_at,

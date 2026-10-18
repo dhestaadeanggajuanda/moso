@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PageStatus;
 use App\Models\Concerns\HasUniqueSlug;
+use App\Support\ReservedSlugs;
 use Carbon\CarbonImmutable;
 use Database\Factories\PageFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -85,5 +86,15 @@ class Page extends Model
     protected function published(Builder $query): void
     {
         $query->where('status', PageStatus::Published);
+    }
+
+    /**
+     * Slug otomatis tidak boleh bentrok dengan route sistem (mis. "berita" menjadi "berita-2").
+     *
+     * @return list<string>
+     */
+    protected function reservedSlugs(): array
+    {
+        return ReservedSlugs::LIST;
     }
 }

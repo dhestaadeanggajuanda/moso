@@ -74,6 +74,47 @@ class Service extends Model
             ->orderBy('name');
     }
 
+    /**
+     * Cari nama layanan secara harfiah: % dan _ dari pengguna bukan wildcard.
+     * Karakter escape "!" eksplisit supaya perilakunya sama di MySQL dan SQLite.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function searchName(Builder $query, string $term): void
+    {
+        $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
+
+        $query->whereRaw("name LIKE ? ESCAPE '!'", ['%'.$escaped.'%']);
+    }
+
+    /**
+     * Layanan tanpa biaya ("Gratis", "Rp 0", "Tidak dipungut biaya").
+     */
+    public function isFree(): bool
+    {
+        return preg_match('/^(gratis|tidak dipungut biaya|rp\.?\s*0(,-|,00)?)$/i', trim($this->cost)) === 1;
+    }
+
+    /**
+     * Ringkasan layanan untuk daftar di situs publik.
+     *
+     * @return array{id: int, name: string, slug: string, description: string|null, processing_time: string, cost: string, is_free: bool, url: string}
+     */
+    public function toPublicSummary(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'description' => $this->description,
+            'processing_time' => $this->processing_time,
+            'cost' => $this->cost,
+            'is_free' => $this->isFree(),
+            'url' => route('site.services.show', $this->slug),
+        ];
+    }
+
     protected function slugSource(): string
     {
         return 'name';

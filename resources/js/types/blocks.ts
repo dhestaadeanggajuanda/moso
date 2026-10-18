@@ -21,11 +21,43 @@ export type HeroBannerProps = {
     cta_label: string | null;
     cta_url: string | null;
     variant: 'primary' | 'muted';
+    /** Path hasil unggahan (page-builder/...); URL-nya ada di data.image_url. */
+    image_path: string | null;
+    image_alt: string | null;
+    /** Tampilkan kolom "Cari layanan" di banner. */
+    show_search: boolean;
 };
 
 export type AgendaKegiatanProps = {
     title: string | null;
     limit: number;
+};
+
+export type LayananListProps = {
+    title: string | null;
+    limit: number;
+    show_search: boolean;
+};
+
+export type AksesCepatIcon =
+    | 'layanan'
+    | 'pengaduan'
+    | 'dokumen'
+    | 'laporan'
+    | 'kontak'
+    | 'berita'
+    | 'agenda'
+    | 'lokasi';
+
+export type AksesCepatItem = {
+    label: string;
+    url: string;
+    icon: AksesCepatIcon;
+};
+
+export type AksesCepatProps = {
+    title: string | null;
+    items: AksesCepatItem[];
 };
 
 export type RichTextProps = {
@@ -38,6 +70,8 @@ export type BlockPropsMap = {
     NewsGridHybrid: NewsGridHybridProps;
     AgendaKegiatan: AgendaKegiatanProps;
     RichText: RichTextProps;
+    LayananList: LayananListProps;
+    AksesCepat: AksesCepatProps;
 };
 
 export type BlockType = keyof BlockPropsMap;
@@ -79,12 +113,30 @@ export type AgendaItem = {
     end_at: string | null;
 };
 
+/** Ringkasan layanan publik (Service::toPublicSummary). */
+export type ServiceSummary = {
+    id: number;
+    name: string;
+    slug: string;
+    description: string | null;
+    processing_time: string;
+    cost: string;
+    is_free: boolean;
+    url: string;
+};
+
 /** Data yang disuntikkan BlockHydrator saat render, per tipe blok. */
 export type BlockDataMap = {
-    HeroBanner: null;
+    HeroBanner: { image_url: string | null; search_url: string } | null;
     NewsGridHybrid: { items: NewsItem[] } | null;
     AgendaKegiatan: { items: AgendaItem[] } | null;
     RichText: null;
+    LayananList: {
+        items: ServiceSummary[];
+        total: number;
+        index_url: string;
+    } | null;
+    AksesCepat: null;
 };
 
 export type HydratedBlock<T extends BlockType = BlockType> = PageBlock<T> & {
