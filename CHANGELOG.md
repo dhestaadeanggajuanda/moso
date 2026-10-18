@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-10-18
+
+Fase 6: blok HeroSlider dan NewsCarousel yang aksesibel untuk TemaModern, serta SOP frontend untuk tim magang.
+
 ### Ditambahkan
 
 - Fase 6, pelengkap TemaModern dan SOP magang:
@@ -128,7 +132,8 @@ Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 d
 - Nilai pengaturan rahasia disimpan terenkripsi dan tidak pernah dikirim ke browser. Session terenkripsi.
 - Advisory npm tinypool (GHSA-5gmw-xhrv-c9v3) ditutup lewat `overrides`.
 
-[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/dhestaadeanggajuanda/moso/releases/tag/v3.0.1
