@@ -49,7 +49,10 @@ class SiteContext
             // Route sistem yang dipakai tema, supaya tema tidak menanam path sendiri.
             'links' => [
                 'home' => route('home'),
+                'news' => route('site.articles.index'),
                 'services' => route('site.services.index'),
+                'ppid' => route('site.ppid.index'),
+                'sakip' => route('site.sakip.index'),
             ],
             'menus' => [
                 'header' => MenuResource::collection(Menu::treeFor(MenuLocation::Header, publicOnly: true))->resolve($request),
@@ -69,7 +72,10 @@ class SiteContext
         return filled($value) && preg_match(SafeUrl::PATTERN, $value) === 1 ? $value : null;
     }
 
-    private function logoUrl(string $key): ?string
+    /**
+     * URL publik logo dari pengaturan, atau null bila kosong atau path-nya tidak wajar.
+     */
+    public function logoUrl(string $key): ?string
     {
         $path = $this->settings->get($key);
 

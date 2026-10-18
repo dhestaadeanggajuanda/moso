@@ -52,6 +52,8 @@ const description = computed(() =>
                 :title="title ?? 'Berita Terkini'"
                 :heading-id="headingId"
                 :description="description"
+                action-label="Lihat semua berita"
+                :action-href="items.length ? data?.index_url : null"
             />
 
             <template v-if="items.length">

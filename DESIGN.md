@@ -295,6 +295,13 @@ Tegas dan ramah: pil tebal dengan teks bold.
 - **Meta layanan:** pil mist dengan teks ink 0.875rem dan ikon brand-600 (Timer, Wallet).
 - **Gratis:** pil ok-soft dengan teks ok semibold dan ikon CircleCheck.
 - **Kategori artikel:** pil canvas, teks brand-800 semibold, cincin 1px line.
+- **Filter (FilterChips):** tautan pil setinggi 44px untuk kategori berita dan kategori PPID, berbungkus (wrap) di ponsel. Aktif: isian brand-700 teks putih dengan `aria-current`; tidak aktif: canvas, teks brand-800, cincin line yang berubah ke brand-300. Jumlah dokumen tampil sebagai pil kecil mist (brand-800 saat aktif).
+
+### Document List (PPID, E-SAKIP)
+
+Daftar dokumen unduhan adalah satu kartu canvas bersudut 16px (cincin line, bayangan Card) berisi baris `DocumentRow` yang dipisah garis line. Tiap baris: petak ikon FileText 48px (mulai sm), judul bold brand-950 sebagai tautan unduhan yang menutupi seluruh baris, ringkasan ink-muted dua baris, meta 0.875rem (pil jenis/kategori mist, tahun, tanggal terbit), dan pil outline "PDF + ukuran" di kanan. Hover: latar brand-50 tipis dan petak ikon berubah brand-700. E-SAKIP dikelompokkan per tahun dengan judul "Tahun 2026" ukuran Section Title; saringan tahun dan jenis berupa select pil 48px di kartu canvas dengan tombol brand-700 "Tampilkan".
+
+Halaman daftar (layanan, berita, PPID, E-SAKIP) diawali kepala halaman navy (`PageHero`: remah roti, h1 Headline, deskripsi brand-100) lalu bidang mist berisi hasil dan paginasi outline (`PageNav`).
 
 ### Cards / Containers
 

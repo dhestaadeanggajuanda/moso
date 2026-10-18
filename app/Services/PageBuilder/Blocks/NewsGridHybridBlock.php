@@ -107,6 +107,10 @@ class NewsGridHybridBlock extends AbstractBlock
             mediaCenterMode: MediaCenterMode::tryFrom($props['media_center_mode']) ?? MediaCenterMode::Tag,
         );
 
-        return ['items' => array_map(fn (NewsItem $item) => $item->toArray(), $items)];
+        return [
+            'items' => array_map(fn (NewsItem $item) => $item->toArray(), $items),
+            // "Lihat semua berita" membuka indeks berita dinas dengan kategori yang sama.
+            'index_url' => route('site.articles.index', array_filter(['kategori' => $props['local_category']])),
+        ];
     }
 }

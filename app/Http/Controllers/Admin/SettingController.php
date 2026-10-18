@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\SiteLogo;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SettingsUpdateRequest;
 use App\Models\Setting;
 use App\Support\Settings;
+use App\Support\SiteContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -13,12 +15,14 @@ use Inertia\Response;
 
 class SettingController extends Controller
 {
-    public function index(Settings $settings): Response
+    public function index(Settings $settings, SiteContext $site): Response
     {
         Gate::authorize('viewAny', Setting::class);
 
         return Inertia::render('admin/settings/Index', [
             'settings' => Setting::query()
+                // Logo diatur lewat unggahan (SiteLogoController), bukan kolom teks.
+                ->whereNotIn('key', SiteLogo::settingKeys())
                 ->orderBy('key')
                 ->get()
                 ->map(fn (Setting $setting) => [
@@ -28,6 +32,11 @@ class SettingController extends Controller
                     'is_encrypted' => $setting->is_encrypted,
                     'has_value' => $setting->value !== null && $setting->value !== '',
                 ]),
+            'logos' => array_map(fn (SiteLogo $logo) => [
+                'slot' => $logo->value,
+                'label' => $logo->label(),
+                'url' => $site->logoUrl($logo->settingKey()),
+            ], SiteLogo::cases()),
         ]);
     }
 

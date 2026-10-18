@@ -75,6 +75,24 @@ class ESakip extends Model
     }
 
     /**
+     * Data dokumen untuk situs publik. Path berkas di storage tidak pernah ikut dikirim.
+     *
+     * @return array{id: int, title: string, type: array{value: string, label: string}, year: int, file_size: int, published_at: string|null, download_url: string}
+     */
+    public function toPublicSummary(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->document_title,
+            'type' => ['value' => $this->document_type->value, 'label' => $this->document_type->label()],
+            'year' => $this->year,
+            'file_size' => $this->file_size,
+            'published_at' => $this->published_at?->toIso8601String(),
+            'download_url' => $this->download_url,
+        ];
+    }
+
+    /**
      * @return Attribute<string, never>
      */
     protected function downloadUrl(): Attribute

@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PublicDocumentController;
 use App\Http\Controllers\Admin\SakipController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SiteLogoController;
 use App\Http\Middleware\EnsureTwoFactorForPrivilegedRoles;
 use Illuminate\Support\Facades\Route;
 
@@ -43,4 +44,8 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
 
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::post('settings/logos/{logo}', [SiteLogoController::class, 'update'])
+            ->middleware('throttle:20,1')
+            ->name('settings.logos.update');
+        Route::delete('settings/logos/{logo}', [SiteLogoController::class, 'destroy'])->name('settings.logos.destroy');
     });

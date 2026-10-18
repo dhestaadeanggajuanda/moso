@@ -123,3 +123,21 @@ export function pathOf(
         return null;
     }
 }
+
+/** "850 KB" atau "1,2 MB" (desimal koma, gaya Indonesia). */
+export function formatFileSize(bytes: number | null | undefined): string {
+    if (!bytes || bytes < 0) {
+        return '';
+    }
+
+    const number = (value: number, digits: number) =>
+        new Intl.NumberFormat(LOCALE, { maximumFractionDigits: digits }).format(
+            value,
+        );
+
+    if (bytes < 1024 * 1024) {
+        return `${number(Math.max(1, Math.round(bytes / 1024)), 0)} KB`;
+    }
+
+    return `${number(bytes / (1024 * 1024), 1)} MB`;
+}

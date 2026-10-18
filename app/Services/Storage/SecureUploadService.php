@@ -53,10 +53,16 @@ class SecureUploadService
     /**
      * @param  string  $directory  Folder tujuan, mis. "articles" (huruf kecil, angka, tanda hubung)
      * @param  string  $attribute  Nama field untuk pesan error validasi
+     * @param  int  $maxWidth  Lebar maksimum hasil (gambar tidak pernah diperbesar)
      * @return string Path objek di disk
      */
-    public function storeImage(UploadedFile $file, string $directory, string $disk = 's3', string $attribute = 'image'): string
-    {
+    public function storeImage(
+        UploadedFile $file,
+        string $directory,
+        string $disk = 's3',
+        string $attribute = 'image',
+        int $maxWidth = self::MAX_WIDTH,
+    ): string {
         if (! preg_match('/^[a-z0-9-]+$/', $directory)) {
             throw new InvalidArgumentException("Direktori unggahan tidak valid: {$directory}");
         }
@@ -64,7 +70,7 @@ class SecureUploadService
         try {
             $encoded = $this->images->decodePath((string) $file->getRealPath())
                 ->orient()
-                ->scaleDown(width: self::MAX_WIDTH)
+                ->scaleDown(width: $maxWidth)
                 ->encode(new WebpEncoder(quality: self::QUALITY, strip: true));
         } catch (Throwable $e) {
             report($e);
