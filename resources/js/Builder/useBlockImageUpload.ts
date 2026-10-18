@@ -15,6 +15,8 @@ export function useBlockImageUpload(pageId: () => number) {
         http.post(PageBuilderController.uploadImage.url(pageId()), {
             onSuccess: (response) => onUploaded(response.path),
             onFinish: () => http.reset(),
+        }).catch(() => {
+            // Galat validasi dan jaringan sudah ditampilkan lewat http.errors.
         });
     }
 
