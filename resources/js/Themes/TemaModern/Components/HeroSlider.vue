@@ -36,10 +36,16 @@ const active = ref(0);
 const pausedByUser = ref(false);
 const interacting = ref(false);
 const reducedMotion = ref(true);
+/** "Hentikan animasi" di widget aksesibilitas (html[data-a11y-motion="off"]). */
+const motionStoppedByWidget = ref(false);
 
 const count = computed(() => props.slides.length);
 const canAutoplay = computed(
-    () => props.autoplay && count.value > 1 && !reducedMotion.value,
+    () =>
+        props.autoplay &&
+        count.value > 1 &&
+        !reducedMotion.value &&
+        !motionStoppedByWidget.value,
 );
 const playing = computed(
     () => canAutoplay.value && !pausedByUser.value && !interacting.value,
@@ -89,16 +95,34 @@ function restartTimer(): void {
 
 watch([playing, active], restartTimer);
 
+let motionObserver: MutationObserver | null = null;
+
 onMounted(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
     reducedMotion.value = query.matches;
     query.addEventListener('change', (event) => {
         reducedMotion.value = event.matches;
     });
+
+    const html = document.documentElement;
+    const readWidget = () => {
+        motionStoppedByWidget.value =
+            html.getAttribute('data-a11y-motion') === 'off';
+    };
+    readWidget();
+    motionObserver = new MutationObserver(readWidget);
+    motionObserver.observe(html, {
+        attributes: true,
+        attributeFilter: ['data-a11y-motion'],
+    });
+
     restartTimer();
 });
 
-onBeforeUnmount(stopTimer);
+onBeforeUnmount(() => {
+    stopTimer();
+    motionObserver?.disconnect();
+});
 </script>
 
 <template>

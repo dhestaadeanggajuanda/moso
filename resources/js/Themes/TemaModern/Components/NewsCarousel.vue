@@ -67,9 +67,9 @@ function scrollByCard(direction: 1 | -1): void {
     }
 
     const gap = parseFloat(getComputedStyle(element).columnGap) || 0;
-    const reduceMotion = window.matchMedia(
-        '(prefers-reduced-motion: reduce)',
-    ).matches;
+    const reduceMotion =
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+        document.documentElement.getAttribute('data-a11y-motion') === 'off';
 
     element.scrollBy({
         left: direction * (card.offsetWidth + gap),

@@ -4,6 +4,16 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Fase 7, widget aksesibilitas `packages/a11y-widget` (`@moso/a11y-widget`, workspace npm):
+    - Web Component `<a11y-widget>` dengan Shadow DOM, TypeScript tanpa framework: ukuran teks, spasi teks (WCAG 1.4.12), font mudah dibaca dan ramah disleksia (Atkinson Hyperlegible dan OpenDyslexic, di-self-host dan baru dimuat saat dipilih), sorot tautan, kontras tinggi, skala abu-abu, warna terbalik, sembunyikan gambar, hentikan animasi (WCAG 2.2.2), kursor besar, panduan baca, bacakan teks (Web Speech API, `id-ID`, suara lokal diutamakan), dan atur ulang. Preferensi disimpan di `localStorage`, tanpa cookie dan tanpa permintaan ke server.
+    - Widget sendiri memenuhi AA: dialog berlabel, fokus pindah ke judul saat dibuka, `Esc` menutup dan mengembalikan fokus ke pemicu, `aria-pressed`, pengumuman `aria-live`, target minimal 44px, dan panel selebar layar di ponsel.
+    - Build ESM dan IIFE (`npm run build:widget`, sekitar 7,5 KB gzip; font dan lisensinya sebagai berkas terpisah) untuk dipasang di aplikasi lain dengan satu tag `<script>` berkonfigurasi `data-*`. API `mount`, `unmount`, `define`, dan event `a11y-change`.
+    - Terpasang di situs publik moso (hanya halaman `site/*`; dilepas dan tampilan dipulihkan saat pindah ke halaman lain). Warna aksen mengikuti token TemaModern lewat `--a11y-accent`. HeroSlider berhenti bergeser otomatis dan NewsCarousel menggulir tanpa animasi saat "Hentikan animasi" aktif.
+    - Pengujian Vitest + happy-dom (`npm run test:widget`), ikut dijalankan `composer ci:check`.
+    - `docs/ACCESSIBILITY.md` (target WCAG 2.2 AA, kewajiban tema, cara pasang dan menguji widget) dan README paket.
+
 ## [3.3.0] - 2026-10-18
 
 Fase 6: blok HeroSlider dan NewsCarousel yang aksesibel untuk TemaModern, serta SOP frontend untuk tim magang.

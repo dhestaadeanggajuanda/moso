@@ -20,7 +20,8 @@
 - Gunakan HTML semantik (`header`, `nav`, `main`, `article`, `footer`, heading berurutan) dan sediakan skip link ke `#konten`.
 - Kontras teks minimal 4.5:1 (3:1 untuk teks besar). Fokus keyboard harus selalu terlihat.
 - Carousel/slider: ada tombol jeda, bisa dioperasikan dengan keyboard, tidak auto-play saat `prefers-reduced-motion`, dan memakai `aria-roledescription="carousel"`.
-- Widget aksesibilitas (`packages/a11y-widget`) adalah pelengkap, bukan pengganti tema yang patuh AA.
+- Widget aksesibilitas (`packages/a11y-widget`) adalah pelengkap, bukan pengganti tema yang patuh AA. Panduan lengkap: `docs/ACCESSIBILITY.md`.
+- Komponen tema yang bergerak lewat JavaScript wajib berhenti saat `html[data-a11y-motion="off"]` ("Hentikan animasi" di widget), sama seperti saat `prefers-reduced-motion`. Contoh: `HeroSlider.vue` (MutationObserver) dan `NewsCarousel.vue`. Warna aksen widget diatur di `theme.css` lewat `--a11y-accent` dan `--a11y-accent-text`.
 
 ## Desain
 

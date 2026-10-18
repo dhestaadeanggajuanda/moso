@@ -3,6 +3,9 @@
     "name": "moso",
     "version": "3.3.0",
     "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
     "type": "module",
     "scripts": {
         "build": "vp build",
@@ -10,7 +13,9 @@
         "dev": "vp dev",
         "check": "vp check",
         "check:fix": "vp check --fix",
-        "types:check": "vue-tsc --noEmit"
+        "types:check": "vue-tsc --noEmit",
+        "test:widget": "npm run test --workspace=@moso/a11y-widget",
+        "build:widget": "npm run build --workspace=@moso/a11y-widget"
     },
     "dependencies": {
         "@inertiajs/vite": "^3.0.0",

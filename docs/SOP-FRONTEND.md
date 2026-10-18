@@ -7,6 +7,7 @@ Dokumen terkait:
 - `DESIGN.md`: sistem desain TemaModern (warna, tipografi, komponen, aturan).
 - `PRODUCT.md`: siapa pengguna situs dan apa tujuannya.
 - `docs/SECURITY-OWASP.md`: aturan keamanan proyek.
+- `docs/ACCESSIBILITY.md`: target WCAG 2.2 AA, widget aksesibilitas, dan cara menguji aksesibilitas.
 
 ## 1. Batas wewenang
 
@@ -75,7 +76,7 @@ Periksa setiap perubahan dengan daftar ini:
 - [ ] Gambar punya `alt` (kosong `alt=""` bila hanya hiasan), ukuran atau `aspect-*` yang jelas, dan `loading="lazy"` kecuali gambar paling atas.
 - [ ] Tautan yang membuka tab baru memakai `rel="noopener noreferrer"` dan keterangan `sr-only` "(membuka tab baru)".
 - [ ] Status tidak dibedakan dengan warna saja: sertakan teks atau ikon (contoh: badge Berita Dinas / Media Center).
-- [ ] Animasi menghormati `prefers-reduced-motion` (sudah diatur global di `theme.css`; jangan menimpanya).
+- [ ] Animasi menghormati `prefers-reduced-motion` dan "Hentikan animasi" di widget aksesibilitas (sudah diatur global di `theme.css` dan oleh widget; jangan menimpanya).
 
 ### Karusel dan slider
 

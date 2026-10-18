@@ -73,6 +73,9 @@
         text-rendering: optimizeLegibility;
         scrollbar-color: var(--color-brand-300) var(--color-mist);
         scroll-padding-top: 1rem;
+        /* Warna aksen widget aksesibilitas (packages/a11y-widget) mengikuti tema. */
+        --a11y-accent: var(--color-brand-900);
+        --a11y-accent-text: var(--color-canvas);
     }
 
     body {

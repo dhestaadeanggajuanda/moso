@@ -123,6 +123,8 @@
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
         "resources/js/**/*.tsx",
-        "resources/js/**/*.vue"
+        "resources/js/**/*.vue",
+        "packages/*/src/**/*.ts",
+        "packages/*/tests/**/*.ts"
     ]
 }

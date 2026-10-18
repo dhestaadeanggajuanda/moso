@@ -10,18 +10,19 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 
 ## Lokasi kode
 
-| Area                                  | Lokasi                                                                                                    |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Route panel admin                     | `routes/admin.php`: prefix `/admin`, nama `admin.*`, middleware `auth` + `verified`                       |
-| Route API publik read-only            | `routes/api.php`, prefix `/api/v1`                                                                        |
-| Controller admin / API / situs publik | `app/Http/Controllers/{Admin,Api/V1,Site}`                                                                |
-| Enum status dan kategori              | `app/Enums` (string-backed, dengan method `label()` berbahasa Indonesia)                                  |
-| Logika domain                         | `app/Services/{Storage,Content,MediaCenter,News,PageBuilder,Workflow}`                                    |
-| Halaman Inertia admin                 | `resources/js/pages/admin/**` (memakai komponen shadcn-vue di `resources/js/components/ui`)               |
-| Page Builder (editor)                 | `resources/js/Builder/` + Pinia store `resources/js/stores/builder.ts`                                    |
-| Renderer publik                       | `resources/js/Core/PageRenderer.vue`                                                                      |
-| Tema                                  | `resources/js/Themes/{NamaTema}/{Layouts,Components,Views,Partials}` + `theme.css`                        |
-| Halaman situs publik                  | `resources/js/pages/site/*` (memuat `Layouts/SiteLayout` dan `Views/*` tema aktif lewat `Core/themes.ts`) |
+| Area                                  | Lokasi                                                                                                                                                                              |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Route panel admin                     | `routes/admin.php`: prefix `/admin`, nama `admin.*`, middleware `auth` + `verified`                                                                                                 |
+| Route API publik read-only            | `routes/api.php`, prefix `/api/v1`                                                                                                                                                  |
+| Controller admin / API / situs publik | `app/Http/Controllers/{Admin,Api/V1,Site}`                                                                                                                                          |
+| Enum status dan kategori              | `app/Enums` (string-backed, dengan method `label()` berbahasa Indonesia)                                                                                                            |
+| Logika domain                         | `app/Services/{Storage,Content,MediaCenter,News,PageBuilder,Workflow}`                                                                                                              |
+| Halaman Inertia admin                 | `resources/js/pages/admin/**` (memakai komponen shadcn-vue di `resources/js/components/ui`)                                                                                         |
+| Page Builder (editor)                 | `resources/js/Builder/` + Pinia store `resources/js/stores/builder.ts`                                                                                                              |
+| Renderer publik                       | `resources/js/Core/PageRenderer.vue`                                                                                                                                                |
+| Tema                                  | `resources/js/Themes/{NamaTema}/{Layouts,Components,Views,Partials}` + `theme.css`                                                                                                  |
+| Halaman situs publik                  | `resources/js/pages/site/*` (memuat `Layouts/SiteLayout` dan `Views/*` tema aktif lewat `Core/themes.ts`)                                                                           |
+| Widget aksesibilitas                  | `packages/a11y-widget` (workspace npm `@moso/a11y-widget`, Web Component vanilla TS, tes `npm run test:widget`); dipasang di halaman `site/*` oleh `resources/js/lib/a11yWidget.ts` |
 
 ## Page Builder
 

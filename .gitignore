@@ -45,3 +45,7 @@ yarn-error.log
 /.codex
 /.gemini
 /.impeccable
+
+# Hasil build dan cache paket workspace (dibuat ulang oleh npm run build:widget / test:widget)
+/packages/*/dist
+/packages/*/node_modules
