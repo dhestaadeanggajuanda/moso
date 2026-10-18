@@ -50,7 +50,7 @@ it('shows the builder with the registered block catalog', function () {
         ->get(route('admin.pages.builder', $page))
         ->assertInertia(fn (Assert $inertia) => $inertia
             ->component('admin/pages/Builder')
-            ->has('catalog', 6)
+            ->has('catalog', 8)
             ->where('catalog.1.type', 'NewsGridHybrid')
             ->where('catalog.1.defaults.fetch_media_center', false));
 });
@@ -222,6 +222,34 @@ it('rejects quick access links with unsafe urls or unknown icons', function () {
         ->assertInvalid([
             'blocks.0.props.items.0.url' => 'URL harus diawali',
             'blocks.0.props.items.0.icon',
+        ]);
+
+    expect($page->fresh()->content_blocks)->toBe([]);
+});
+
+it('rejects unsafe slide links, too many slides, and an out-of-range interval', function () {
+    $page = Page::factory()->create();
+    $slide = fn (array $overrides = []) => ['heading' => 'Slide', 'subheading' => null, 'cta_label' => null, 'cta_url' => null, 'image_path' => null, 'image_alt' => null, ...$overrides];
+
+    $this->actingAs(userWithRole(RoleName::Editor))
+        ->put(route('admin.pages.blocks.update', $page), ['blocks' => [
+            block('HeroSlider', [
+                'slides' => [$slide(['cta_label' => 'Klik', 'cta_url' => 'javascript:alert(1)'])],
+                'autoplay' => true,
+                'interval' => 2,
+                'show_search' => false,
+            ]),
+            block('HeroSlider', [
+                'slides' => array_fill(0, 6, $slide()),
+                'autoplay' => false,
+                'interval' => 7,
+                'show_search' => false,
+            ]),
+        ]])
+        ->assertInvalid([
+            'blocks.0.props.slides.0.cta_url' => 'URL harus diawali',
+            'blocks.0.props.interval',
+            'blocks.1.props.slides' => 'Maksimal 5 slide.',
         ]);
 
     expect($page->fresh()->content_blocks)->toBe([]);

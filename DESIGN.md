@@ -332,6 +332,14 @@ Pil kecil berikon yang wajib menyertai setiap item berita: Landmark + "Berita Di
 
 Petak tanggal navy brand-900 bersudut 12px, lebar 64px sampai 72px: singkatan hari (kapital) di atas, angka tanggal 800 besar, singkatan bulan (kapital) di bawah, dengan tanggal lengkap untuk pembaca layar. Huruf kapital di sini adalah bahasa kalender, bukan label hias.
 
+### Hero Slider (opsional)
+
+Varian banner untuk beberapa pesan penting, dipilih pengelola; HeroBanner tunggal tetap pilihan utama beranda. Bidang navy dengan foto per slide dan lapisan gradien yang sama dengan HeroBanner. Slide berganti dengan memudar 500ms (foto 700ms), semua slide di satu sel grid sehingga tinggi tidak melompat, dan slide tidak aktif dibuat inert. Kontrol di bawah teks: tombol bulat 44px (jeda/putar, sebelumnya, berikutnya) berlatar putih 10% dengan cincin putih 25%, lalu titik slide (target 32px; titik aktif bar emas 24px, lainnya putih 50%). Bergeser otomatis hanya bila diaktifkan (jeda 5–15 detik), berhenti saat kursor atau fokus di dalam, dan tidak pernah berjalan saat gerak dikurangi. Judul slide h2; halaman mendapat h1 khusus pembaca layar.
+
+### News Carousel
+
+Deret kartu berita vertikal (NewsCard varian stacked) yang digeser manual dengan scroll-snap: 85% lebar di ponsel agar kartu berikutnya mengintip, dua kartu mulai sm, dan 2–4 kartu di lg sesuai pengaturan blok. Tombol sebelumnya/berikutnya bulat 44px (canvas, teks brand-700, cincin line) rata kanan di bawah deret, nonaktif di ujung. Tidak pernah bergeser otomatis.
+
 ### Rich Text (.prose-moso)
 
 Isi HTML dari editor yang sudah disanitasi server: maks. 70ch, 1.0625rem dengan leading 1.75, h2/h3 bold brand-950, tautan brand-700 bergaris bawah, penanda daftar brand-600, kutipan bergaris kiri brand-300, tabel bergulir horizontal dengan header mist, gambar bersudut 16px.
@@ -351,7 +359,7 @@ Isi HTML dari editor yang sudah disanitasi server: maks. 70ch, 1.0625rem dengan 
 ### Don't:
 
 - **Don't** menulis kode warna hex atau nilai warna mentah di komponen tema.
-- **Don't** mengganti banner foto tunggal dengan slider yang berputar atau berkedip.
+- **Don't** memakai slider yang berkedip, berputar tanpa tombol jeda, atau bergerak saat pengguna memilih gerak dikurangi; HeroSlider hanya untuk beberapa pesan penting dan HeroBanner tunggal tetap pilihan utama.
 - **Don't** memakai ikon clip-art, ikon berwarna penuh, atau glyph/emoji sebagai ikon.
 - **Don't** memakai teks kecil abu-abu pucat; teks sekunder di bidang terang tetap ink-muted dan minimal 0.875rem.
 - **Don't** membuat kartu seragam yang hanya berisi judul tanpa informasi.

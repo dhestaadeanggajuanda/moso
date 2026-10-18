@@ -2,7 +2,9 @@ import type { LucideIcon } from '@lucide/vue';
 import {
     CalendarDays,
     ClipboardList,
+    GalleryHorizontalEnd,
     Image,
+    Images,
     LayoutGrid,
     Newspaper,
     Type,
@@ -20,6 +22,8 @@ export const blockIcons: Record<BlockType, LucideIcon> = {
     RichText: Type,
     LayananList: ClipboardList,
     AksesCepat: LayoutGrid,
+    HeroSlider: Images,
+    NewsCarousel: GalleryHorizontalEnd,
 };
 
 const modeLabels = {
@@ -35,10 +39,22 @@ export function blockSummary(block: AnyPageBlock): string {
     switch (block.type) {
         case 'HeroBanner':
             return block.props.heading;
-        case 'NewsGridHybrid': {
+        case 'HeroSlider': {
+            const parts = [`${block.props.slides.length} slide`];
+
+            if (block.props.autoplay) {
+                parts.push(`otomatis tiap ${block.props.interval} detik`);
+            }
+
+            return parts.join(' · ');
+        }
+        case 'NewsGridHybrid':
+        case 'NewsCarousel': {
             const parts = [
                 `${block.props.limit} berita`,
-                `${block.props.columns} kolom`,
+                block.type === 'NewsCarousel'
+                    ? `${block.props.columns} kartu per layar`
+                    : `${block.props.columns} kolom`,
             ];
 
             if (block.props.local_category) {

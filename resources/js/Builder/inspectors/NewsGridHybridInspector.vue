@@ -15,7 +15,10 @@ defineProps<{
 }>();
 
 const store = useBuilderStore();
-const block = computed(() => store.selected as PageBlock<'NewsGridHybrid'>);
+// Dipakai bersama oleh NewsGridHybrid dan NewsCarousel (props sama).
+const block = computed(
+    () => store.selected as PageBlock<'NewsGridHybrid' | 'NewsCarousel'>,
+);
 </script>
 
 <template>
@@ -40,7 +43,11 @@ const block = computed(() => store.selected as PageBlock<'NewsGridHybrid'>);
                 <InputError :message="errors.limit" />
             </div>
             <div class="grid gap-1.5">
-                <Label for="ngh-columns">Kolom (desktop)</Label>
+                <Label for="ngh-columns">{{
+                    block.type === 'NewsCarousel'
+                        ? 'Kartu per layar (desktop)'
+                        : 'Kolom (desktop)'
+                }}</Label>
                 <NativeSelect
                     id="ngh-columns"
                     v-model.number="block.props.columns"

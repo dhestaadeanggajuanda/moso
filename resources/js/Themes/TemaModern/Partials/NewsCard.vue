@@ -15,10 +15,15 @@ import SourceBadge from './SourceBadge.vue';
 const props = defineProps<{
     item: NewsItem;
     featured?: boolean;
+    /** Selalu kartu vertikal, juga di ponsel (dipakai di karusel). */
+    stacked?: boolean;
 }>();
 
 /** Berita tanpa foto tampil sebagai kartu teks, bukan kotak gambar kosong. */
 const hasImage = computed(() => !!props.item.image_url);
+
+/** Kartu biasa di ponsel berbentuk baris rapat; kartu stacked tetap vertikal. */
+const compact = computed(() => !props.featured && !props.stacked);
 </script>
 
 <template>
@@ -29,7 +34,9 @@ const hasImage = computed(() => !!props.item.image_url);
                 ? hasImage
                     ? 'flex-col lg:grid lg:grid-cols-12'
                     : 'flex-col'
-                : 'flex-row sm:flex-col'
+                : compact
+                  ? 'flex-row sm:flex-col'
+                  : 'flex-col'
         "
     >
         <div
@@ -38,7 +45,9 @@ const hasImage = computed(() => !!props.item.image_url);
             :class="
                 featured
                     ? 'aspect-[16/9] lg:col-span-7 lg:aspect-auto lg:min-h-80'
-                    : 'w-28 flex-none self-stretch sm:aspect-[16/10] sm:w-auto sm:self-auto'
+                    : compact
+                      ? 'w-28 flex-none self-stretch sm:aspect-[16/10] sm:w-auto sm:self-auto'
+                      : 'aspect-[16/10]'
             "
         >
             <img
@@ -60,7 +69,9 @@ const hasImage = computed(() => !!props.item.image_url);
                               ? 'lg:col-span-5 lg:justify-center lg:p-8'
                               : 'lg:max-w-4xl lg:p-10',
                       ]
-                    : 'gap-2 p-4 sm:gap-3 sm:p-5'
+                    : compact
+                      ? 'gap-2 p-4 sm:gap-3 sm:p-5'
+                      : 'gap-3 p-5'
             "
         >
             <h3
@@ -89,7 +100,7 @@ const hasImage = computed(() => !!props.item.image_url);
                 :class="
                     featured
                         ? 'line-clamp-4 sm:text-base'
-                        : hasImage
+                        : hasImage && compact
                           ? 'line-clamp-2 max-sm:hidden'
                           : 'line-clamp-2'
                 "

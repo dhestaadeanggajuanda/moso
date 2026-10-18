@@ -8,6 +8,7 @@ import BlockPalette from '@/Builder/BlockPalette.vue';
 import AgendaKegiatanInspector from '@/Builder/inspectors/AgendaKegiatanInspector.vue';
 import AksesCepatInspector from '@/Builder/inspectors/AksesCepatInspector.vue';
 import HeroBannerInspector from '@/Builder/inspectors/HeroBannerInspector.vue';
+import HeroSliderInspector from '@/Builder/inspectors/HeroSliderInspector.vue';
 import LayananListInspector from '@/Builder/inspectors/LayananListInspector.vue';
 import NewsGridHybridInspector from '@/Builder/inspectors/NewsGridHybridInspector.vue';
 import RichTextInspector from '@/Builder/inspectors/RichTextInspector.vue';
@@ -42,6 +43,8 @@ const inspectors: Record<BlockType, Component> = {
     RichText: RichTextInspector,
     LayananList: LayananListInspector,
     AksesCepat: AksesCepatInspector,
+    HeroSlider: HeroSliderInspector,
+    NewsCarousel: NewsGridHybridInspector,
 };
 
 store.load(props.blocks);

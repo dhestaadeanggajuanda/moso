@@ -60,6 +60,28 @@ export type AksesCepatProps = {
     items: AksesCepatItem[];
 };
 
+/** Satu slide HeroSlider. Foto disimpan sebagai path; URL-nya di data.images. */
+export type HeroSlide = {
+    heading: string;
+    subheading: string | null;
+    cta_label: string | null;
+    cta_url: string | null;
+    image_path: string | null;
+    image_alt: string | null;
+};
+
+export type HeroSliderProps = {
+    slides: HeroSlide[];
+    /** Bergeser otomatis; tema tetap menyediakan tombol jeda. */
+    autoplay: boolean;
+    /** Jeda antarslide dalam detik (5–15). */
+    interval: number;
+    show_search: boolean;
+};
+
+/** Sama dengan NewsGridHybrid; columns = kartu terlihat di desktop. */
+export type NewsCarouselProps = NewsGridHybridProps;
+
 export type RichTextProps = {
     /** HTML yang sudah disanitasi server. */
     html: string;
@@ -72,6 +94,8 @@ export type BlockPropsMap = {
     RichText: RichTextProps;
     LayananList: LayananListProps;
     AksesCepat: AksesCepatProps;
+    HeroSlider: HeroSliderProps;
+    NewsCarousel: NewsCarouselProps;
 };
 
 export type BlockType = keyof BlockPropsMap;
@@ -141,6 +165,12 @@ export type BlockDataMap = {
         index_url: string;
     } | null;
     AksesCepat: null;
+    HeroSlider: {
+        /** URL foto per slide, urutan sama dengan props.slides. */
+        images: (string | null)[];
+        search_url: string;
+    } | null;
+    NewsCarousel: BlockDataMap['NewsGridHybrid'];
 };
 
 export type HydratedBlock<T extends BlockType = BlockType> = PageBlock<T> & {

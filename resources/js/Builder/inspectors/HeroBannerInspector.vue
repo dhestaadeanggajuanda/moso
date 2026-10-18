@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { useHttp } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import PageBuilderController from '@/actions/App/Http/Controllers/Admin/PageBuilderController';
+import { useBlockImageUpload } from '@/Builder/useBlockImageUpload';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,9 +20,9 @@ const store = useBuilderStore();
 const block = computed(() => store.selected as PageBlock<'HeroBanner'>);
 
 const fileInput = ref<HTMLInputElement | null>(null);
-const upload = useHttp<{ image: File | null }, { path: string; url: string }>({
-    image: null,
-});
+const { http: upload, upload: uploadImage } = useBlockImageUpload(
+    () => props.pageId,
+);
 
 const previewUrl = computed(() =>
     block.value.props.image_path
@@ -46,19 +45,13 @@ function onFileChange(event: Event): void {
         return;
     }
 
-    upload.image = file;
-    upload.post(PageBuilderController.uploadImage.url(props.pageId), {
-        onSuccess: (response) => {
-            block.value.props.image_path = response.path;
-        },
-        onFinish: () => {
-            upload.reset();
-
-            if (fileInput.value) {
-                fileInput.value.value = '';
-            }
-        },
+    uploadImage(file, (path) => {
+        block.value.props.image_path = path;
     });
+
+    if (fileInput.value) {
+        fileInput.value.value = '';
+    }
 }
 
 function removeImage(): void {

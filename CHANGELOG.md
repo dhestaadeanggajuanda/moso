@@ -4,6 +4,14 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Fase 6, pelengkap TemaModern dan SOP magang:
+    - Blok HeroSlider (Banner Bergeser): satu sampai lima slide berfoto dengan judul, subjudul, dan tombol. Bergeser manual; bergeser otomatis hanya bila diaktifkan (jeda 5–15 detik), dengan tombol jeda, berhenti saat kursor atau fokus di dalam, dan tidak bergerak saat pengguna memilih gerak dikurangi. Pola karusel WAI-ARIA, slide tidak aktif dibuat inert, dan panah kiri/kanan bekerja di kontrol.
+    - Blok NewsCarousel (Karusel Berita): berita lokal dan Media Center dalam deret yang digeser dengan tombol, sentuhan, atau Tab; tidak pernah bergeser otomatis.
+    - Inspector Page Builder untuk kedua blok; unggah foto blok kini memakai composable bersama `useBlockImageUpload`.
+    - `docs/SOP-FRONTEND.md` (batas wewenang tim magang, mobile-first, token desain, daftar periksa WCAG 2.2 AA, aturan karusel, keamanan template, alur kerja) dan `Themes/TemaModern/README.md`.
+
 ## [3.2.0] - 2026-10-18
 
 Fase 5 (alur persetujuan artikel dan jejak audit) serta situs publik lanjutan: halaman PPID, E-SAKIP, indeks berita, dan unggah logo.
