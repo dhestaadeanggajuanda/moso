@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Diperbaiki
+
+- Label blok AksesCepat tidak lagi meluap keluar petak. Empat tautan atau lebih kini tampil dua kolom di ponsel dan tablet, lalu empat kolom mulai lg. Sebelumnya empat kolom di semua lebar, dengan ruang label sekitar 60px di layar 360px. Tiga tautan tetap satu baris, dengan ikon di atas label sampai md (sebelumnya sm) agar label tidak terdesak ke padding di 640px. Ikon dalam satu baris kini sejajar, dan kata yang lebih lebar dari petak dibungkus di dalam petak.
+
 ## [3.1.0] - 2026-10-18
 
 Fase 2 sampai 4: modul kepatuhan dan API publik, integrasi Media Center dan Page Builder, serta renderer publik dengan tema TemaModern.
