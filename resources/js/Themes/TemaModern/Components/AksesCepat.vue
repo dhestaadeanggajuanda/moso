@@ -66,13 +66,19 @@ const links = computed(() =>
             >
                 {{ title }}
             </h2>
+            <!--
+                Ponsel: ikon di atas label agar kata panjang tetap utuh.
+                Tiga tautan satu baris, ikon pindah ke samping label mulai md.
+                Jumlah lain dua kolom, ikon di samping label mulai sm, dan
+                empat kolom mulai lg bila ada empat tautan atau lebih.
+            -->
             <ul
                 class="grid gap-2 sm:gap-4"
                 :class="
-                    links.length >= 4
-                        ? 'grid-cols-4'
-                        : links.length === 3
-                          ? 'grid-cols-3'
+                    links.length === 3
+                        ? 'grid-cols-3'
+                        : links.length >= 4
+                          ? 'grid-cols-2 lg:grid-cols-4'
                           : 'grid-cols-2'
                 "
             >
@@ -84,7 +90,12 @@ const links = computed(() =>
                         :href="link.url"
                         :target="link.external ? '_blank' : undefined"
                         :rel="link.external ? 'noopener noreferrer' : undefined"
-                        class="group rounded-card bg-canvas ring-line hover:ring-brand-300 hover:shadow-raised ease-out-expo flex h-full flex-col items-center justify-center gap-2 px-2 py-3 text-center ring-1 shadow-card transition duration-300 sm:min-h-20 sm:flex-row sm:justify-start sm:gap-4 sm:p-5 sm:text-left"
+                        class="group rounded-card bg-canvas ring-line hover:ring-brand-300 hover:shadow-raised ease-out-expo flex h-full flex-col items-center gap-2 px-2 py-3 text-center ring-1 shadow-card transition duration-300"
+                        :class="
+                            links.length === 3
+                                ? 'sm:p-4 md:min-h-20 md:flex-row md:gap-4 md:p-5 md:text-left'
+                                : 'sm:min-h-20 sm:flex-row sm:gap-4 sm:p-5 sm:text-left'
+                        "
                     >
                         <span
                             class="bg-brand-50 text-brand-700 group-hover:bg-brand-700 grid size-10 flex-none place-items-center rounded-xl transition-colors duration-300 group-hover:text-white sm:size-12"
@@ -96,7 +107,7 @@ const links = computed(() =>
                             />
                         </span>
                         <span
-                            class="text-brand-950 group-hover:text-brand-700 text-sm leading-tight font-bold sm:text-base sm:leading-snug"
+                            class="text-brand-950 group-hover:text-brand-700 min-w-0 text-sm leading-tight font-bold wrap-anywhere sm:text-base sm:leading-snug"
                         >
                             {{ link.label }}
                             <span v-if="link.external" class="sr-only">
