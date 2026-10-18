@@ -53,3 +53,34 @@ it('rejects keys outside the allowed format', function () {
 
     expect(Setting::query()->count())->toBe(0);
 });
+
+it('shows logos as upload slots instead of free text settings', function () {
+    config(['filesystems.disks.s3.url' => 'https://media.example.go.id/moso-public']);
+    $settings = app(Settings::class);
+    $settings->put('site.logo_pemkot', 'branding/2026/10/0b6f1f0e-8d1c-4a59-9a39-3f1e6f0b2c11.webp');
+    $settings->put('site.logo_dinas', '');
+    $settings->put('site.name', 'Portal Dinas');
+
+    $this->actingAs(userWithRole(RoleName::SuperAdmin))
+        ->get(route('admin.settings.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('settings', 1)
+            ->where('settings.0.key', 'site.name')
+            ->where('logos.0.slot', 'pemkot')
+            ->where('logos.0.url', 'https://media.example.go.id/moso-public/branding/2026/10/0b6f1f0e-8d1c-4a59-9a39-3f1e6f0b2c11.webp')
+            ->where('logos.1.slot', 'dinas')
+            ->where('logos.1.url', null));
+});
+
+it('refuses to set a logo path through the text settings form', function () {
+    $settings = app(Settings::class);
+    $settings->put('site.logo_dinas', 'branding/logo-dinas.webp');
+
+    $this->actingAs(userWithRole(RoleName::SuperAdmin))
+        ->put(route('admin.settings.update'), [
+            'settings' => [['key' => 'site.logo_dinas', 'value' => 'articles/foto-orang.webp']],
+        ])
+        ->assertInvalid(['settings.0.key' => 'Logo diatur lewat unggahan']);
+
+    expect($settings->get('site.logo_dinas'))->toBe('branding/logo-dinas.webp');
+});

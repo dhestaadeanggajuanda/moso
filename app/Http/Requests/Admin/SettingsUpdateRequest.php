@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\SiteLogo;
 use App\Models\Setting;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SettingsUpdateRequest extends FormRequest
 {
@@ -24,7 +26,11 @@ class SettingsUpdateRequest extends FormRequest
     {
         return [
             'settings' => ['required', 'array', 'max:200'],
-            'settings.*.key' => ['required', 'string', 'max:100', 'regex:/^[a-z0-9_]+(\.[a-z0-9_]+)*$/', 'distinct'],
+            'settings.*.key' => [
+                'required', 'string', 'max:100', 'regex:/^[a-z0-9_]+(\.[a-z0-9_]+)*$/', 'distinct',
+                // Path logo hanya boleh berasal dari unggahan (SiteLogoController).
+                Rule::notIn(SiteLogo::settingKeys()),
+            ],
             'settings.*.value' => ['nullable', 'string', 'max:5000'],
             'settings.*.is_encrypted' => ['boolean'],
         ];
@@ -37,6 +43,7 @@ class SettingsUpdateRequest extends FormRequest
     {
         return [
             'settings.*.key.regex' => 'Key hanya boleh huruf kecil, angka, garis bawah, dipisah titik (mis. contact.phone).',
+            'settings.*.key.not_in' => 'Logo diatur lewat unggahan di bagian Logo, bukan sebagai teks.',
         ];
     }
 }

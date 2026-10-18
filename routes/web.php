@@ -3,14 +3,19 @@
 use App\Http\Controllers\Site\ArticleController;
 use App\Http\Controllers\Site\DocumentDownloadController;
 use App\Http\Controllers\Site\PageController;
+use App\Http\Controllers\Site\PublicDocumentController;
+use App\Http\Controllers\Site\SakipController;
 use App\Http\Controllers\Site\ServiceController;
 use App\Support\ReservedSlugs;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('berita', [ArticleController::class, 'index'])->name('site.articles.index');
 Route::get('berita/{article:slug}', [ArticleController::class, 'show'])->name('site.articles.show');
 Route::get('layanan', [ServiceController::class, 'index'])->name('site.services.index');
 Route::get('layanan/{service:slug}', [ServiceController::class, 'show'])->name('site.services.show');
+Route::get('ppid', [PublicDocumentController::class, 'index'])->name('site.ppid.index');
+Route::get('sakip', [SakipController::class, 'index'])->name('site.sakip.index');
 
 // Unduhan dokumen publik: dialihkan ke URL bertanda tangan berumur pendek.
 Route::middleware('throttle:downloads')->prefix('unduh')->name('documents.')->group(function () {

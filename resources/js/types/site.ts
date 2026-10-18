@@ -31,7 +31,13 @@ export type SiteContext = {
     social: Partial<Record<'facebook' | 'instagram' | 'youtube', string>>;
     links: {
         home: string;
+        /** Indeks berita dinas (/berita). */
+        news: string;
         services: string;
+        /** Daftar Informasi Publik (/ppid). */
+        ppid: string;
+        /** Dokumen E-SAKIP (/sakip). */
+        sakip: string;
     };
     menus: {
         header: MenuLink[];
@@ -65,6 +71,54 @@ export type PublicService = ServiceSummary & {
     product: string | null;
     complaint_channel: string | null;
     updated_at: string | null;
+};
+
+/** Filter kategori di indeks berita (Site\ArticleController@index). */
+export type NewsCategoryFilter = {
+    name: string;
+    slug: string;
+    url: string;
+};
+
+export type PpidCategoryValue = 'berkala' | 'serta_merta' | 'setiap_saat';
+
+/** Dokumen PPID terbit (PublicDocument::toPublicSummary). Tanpa path storage. */
+export type PublicDocumentItem = {
+    slug: string;
+    title: string;
+    description: string | null;
+    category: { value: PpidCategoryValue; label: string };
+    year: number | null;
+    /** Ukuran berkas dalam byte. */
+    file_size: number;
+    published_at: string | null;
+    download_url: string;
+};
+
+/** Tab kategori PPID beserta jumlah dokumen terbitnya. */
+export type PpidCategoryTab = {
+    value: PpidCategoryValue;
+    label: string;
+    description: string;
+    count: number;
+    url: string;
+};
+
+/** Dokumen E-SAKIP terbit (ESakip::toPublicSummary). Tanpa path storage. */
+export type SakipDocumentItem = {
+    id: number;
+    title: string;
+    type: { value: string; label: string };
+    year: number;
+    /** Ukuran berkas dalam byte. */
+    file_size: number;
+    published_at: string | null;
+    download_url: string;
+};
+
+export type SakipYearGroup = {
+    year: number;
+    documents: SakipDocumentItem[];
 };
 
 /** Paginator Laravel (LengthAwarePaginator) seperti yang diserialisasi Inertia. */

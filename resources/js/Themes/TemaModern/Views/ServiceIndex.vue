@@ -5,10 +5,12 @@
     App\Http\Controllers\Site\ServiceController@index.
 -->
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Phone, Search } from '@lucide/vue';
+import { Phone, Search } from '@lucide/vue';
 import { useId } from 'vue';
 import type { ServiceSummary } from '@/types/blocks';
 import type { Paginated, SiteContext } from '@/types/site';
+import PageHero from '../Partials/PageHero.vue';
+import PageNav from '../Partials/PageNav.vue';
 import ServiceCard from '../Partials/ServiceCard.vue';
 
 defineProps<{
@@ -22,70 +24,43 @@ const searchId = useId();
 
 <template>
     <div>
-        <header
-            class="bg-brand-900 relative isolate overflow-hidden text-white"
+        <PageHero
+            :home-url="site.links.home"
+            title="Layanan Publik"
+            description="Temukan persyaratan, prosedur, jangka waktu, dan biaya setiap layanan sebelum Anda datang ke kantor."
+            :trail="[{ label: 'Layanan' }]"
         >
-            <div
-                class="mx-auto max-w-7xl px-4 pt-8 pb-12 sm:px-6 sm:pt-12 sm:pb-16 lg:px-8"
+            <form
+                :action="site.links.services"
+                method="get"
+                role="search"
+                class="sm:bg-canvas sm:shadow-raised mt-8 flex max-w-2xl flex-col gap-2 sm:flex-row sm:rounded-full sm:p-1.5"
             >
-                <nav aria-label="Remah roti" class="text-brand-200 text-sm">
-                    <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <li>
-                            <a
-                                :href="site.links.home"
-                                class="font-semibold text-white hover:underline"
-                            >
-                                Beranda
-                            </a>
-                        </li>
-                        <li aria-hidden="true">/</li>
-                        <li aria-current="page">Layanan</li>
-                    </ol>
-                </nav>
-                <h1
-                    class="mt-4 text-3xl leading-tight font-extrabold tracking-tight sm:text-5xl"
+                <label :for="searchId" class="sr-only">Cari layanan</label>
+                <div class="relative flex-1">
+                    <Search
+                        class="text-ink-muted pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2"
+                        aria-hidden="true"
+                    />
+                    <input
+                        :id="searchId"
+                        type="search"
+                        name="q"
+                        maxlength="100"
+                        autocomplete="off"
+                        :value="search"
+                        placeholder="Cari layanan, mis. surat keterangan"
+                        class="bg-canvas text-ink shadow-raised placeholder:text-ink-muted h-12 w-full rounded-full pr-4 pl-12 text-base sm:shadow-none"
+                    />
+                </div>
+                <button
+                    type="submit"
+                    class="bg-gold-400 text-brand-950 hover:bg-gold-300 h-12 flex-none rounded-full px-7 font-bold transition-colors"
                 >
-                    Layanan Publik
-                </h1>
-                <p
-                    class="text-brand-100 mt-4 max-w-2xl text-lg leading-relaxed"
-                >
-                    Temukan persyaratan, prosedur, jangka waktu, dan biaya
-                    setiap layanan sebelum Anda datang ke kantor.
-                </p>
-
-                <form
-                    :action="site.links.services"
-                    method="get"
-                    role="search"
-                    class="sm:bg-canvas sm:shadow-raised mt-8 flex max-w-2xl flex-col gap-2 sm:flex-row sm:rounded-full sm:p-1.5"
-                >
-                    <label :for="searchId" class="sr-only">Cari layanan</label>
-                    <div class="relative flex-1">
-                        <Search
-                            class="text-ink-muted pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2"
-                            aria-hidden="true"
-                        />
-                        <input
-                            :id="searchId"
-                            type="search"
-                            name="q"
-                            maxlength="100"
-                            autocomplete="off"
-                            :value="search"
-                            placeholder="Cari layanan, mis. surat keterangan"
-                            class="bg-canvas text-ink shadow-raised placeholder:text-ink-muted h-12 w-full rounded-full pr-4 pl-12 text-base sm:shadow-none"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        class="bg-gold-400 text-brand-950 hover:bg-gold-300 h-12 flex-none rounded-full px-7 font-bold transition-colors"
-                    >
-                        Cari
-                    </button>
-                </form>
-            </div>
-        </header>
+                    Cari
+                </button>
+            </form>
+        </PageHero>
 
         <section class="bg-mist py-10 sm:py-14" aria-labelledby="hasil-layanan">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -148,36 +123,7 @@ const searchId = useId();
                     </a>
                 </div>
 
-                <nav
-                    v-if="services.last_page > 1"
-                    aria-label="Halaman daftar layanan"
-                    class="mt-10 flex items-center justify-between gap-4"
-                >
-                    <a
-                        v-if="services.prev_page_url"
-                        :href="services.prev_page_url"
-                        rel="prev"
-                        class="bg-canvas text-brand-700 ring-line hover:ring-brand-300 inline-flex h-11 items-center gap-2 rounded-full px-5 font-bold ring-1"
-                    >
-                        <ArrowLeft class="size-4" aria-hidden="true" />
-                        Sebelumnya
-                    </a>
-                    <span v-else />
-                    <p class="text-ink-muted text-sm tabular-nums">
-                        Halaman {{ services.current_page }} dari
-                        {{ services.last_page }}
-                    </p>
-                    <a
-                        v-if="services.next_page_url"
-                        :href="services.next_page_url"
-                        rel="next"
-                        class="bg-canvas text-brand-700 ring-line hover:ring-brand-300 inline-flex h-11 items-center gap-2 rounded-full px-5 font-bold ring-1"
-                    >
-                        Berikutnya
-                        <ArrowRight class="size-4" aria-hidden="true" />
-                    </a>
-                    <span v-else />
-                </nav>
+                <PageNav :paginator="services" label="Halaman daftar layanan" />
             </div>
         </section>
     </div>

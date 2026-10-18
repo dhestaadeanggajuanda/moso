@@ -76,6 +76,25 @@ class PublicDocument extends Model
     }
 
     /**
+     * Data dokumen untuk situs publik. Path berkas di storage tidak pernah ikut dikirim.
+     *
+     * @return array{slug: string, title: string, description: string|null, category: array{value: string, label: string}, year: int|null, file_size: int, published_at: string|null, download_url: string}
+     */
+    public function toPublicSummary(): array
+    {
+        return [
+            'slug' => $this->slug,
+            'title' => $this->title,
+            'description' => $this->description,
+            'category' => ['value' => $this->category->value, 'label' => $this->category->label()],
+            'year' => $this->year,
+            'file_size' => $this->file_size,
+            'published_at' => $this->published_at?->toIso8601String(),
+            'download_url' => $this->download_url,
+        ];
+    }
+
+    /**
      * @return Attribute<string, never>
      */
     protected function downloadUrl(): Attribute

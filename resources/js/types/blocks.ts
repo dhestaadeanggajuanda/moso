@@ -128,7 +128,11 @@ export type ServiceSummary = {
 /** Data yang disuntikkan BlockHydrator saat render, per tipe blok. */
 export type BlockDataMap = {
     HeroBanner: { image_url: string | null; search_url: string } | null;
-    NewsGridHybrid: { items: NewsItem[] } | null;
+    NewsGridHybrid: {
+        items: NewsItem[];
+        /** Indeks berita dinas, dengan filter kategori blok bila ada. */
+        index_url: string;
+    } | null;
     AgendaKegiatan: { items: AgendaItem[] } | null;
     RichText: null;
     LayananList: {

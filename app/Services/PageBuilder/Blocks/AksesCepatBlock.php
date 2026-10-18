@@ -35,14 +35,19 @@ class AksesCepatBlock extends AbstractBlock
         return 'Deret tautan berikon ke layanan, pengaduan, PPID, E-SAKIP, atau halaman penting lain.';
     }
 
+    /**
+     * Pencarian layanan sudah ada di banner, jadi tautan bawaan mengarah ke
+     * halaman kepatuhan (PPID, E-SAKIP) dan kanal pengaduan. Tiga tautan
+     * supaya label tetap muat satu baris di ponsel 360px.
+     */
     public function defaults(): array
     {
         return [
             'title' => null,
             'items' => [
-                ['label' => 'Cari layanan', 'url' => '/layanan', 'icon' => 'layanan'],
+                ['label' => 'PPID', 'url' => '/ppid', 'icon' => 'dokumen'],
+                ['label' => 'E-SAKIP', 'url' => '/sakip', 'icon' => 'laporan'],
                 ['label' => 'Pengaduan', 'url' => 'https://www.lapor.go.id', 'icon' => 'pengaduan'],
-                ['label' => 'Hubungi kami', 'url' => '/#kontak', 'icon' => 'kontak'],
             ],
         ];
     }

@@ -25,7 +25,7 @@ class SettingsSeeder extends Seeder
         'contact.hours' => '',
         // Kanal pengaduan nasional SP4N-LAPOR!; dapat diganti kanal milik dinas.
         'contact.complaint_url' => 'https://www.lapor.go.id',
-        // Path logo di disk s3 (mis. branding/logo-pemkot.webp).
+        // Path logo di disk s3; diisi lewat unggahan di halaman Pengaturan.
         'site.logo_pemkot' => '',
         'site.logo_dinas' => '',
         'social.facebook' => '',

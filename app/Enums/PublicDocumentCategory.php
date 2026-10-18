@@ -21,6 +21,18 @@ enum PublicDocumentCategory: string
     }
 
     /**
+     * Penjelasan singkat untuk warga, mengacu pada Pasal 9 sampai 11 UU 14/2008.
+     */
+    public function description(): string
+    {
+        return match ($this) {
+            self::Berkala => 'Diumumkan rutin sekurang-kurangnya enam bulan sekali, misalnya profil, ringkasan kinerja, dan laporan keuangan.',
+            self::SertaMerta => 'Menyangkut hajat hidup orang banyak dan ketertiban umum, sehingga diumumkan tanpa penundaan.',
+            self::SetiapSaat => 'Tersedia dan dapat diminta kapan saja, misalnya daftar informasi publik, kebijakan, dan perjanjian.',
+        };
+    }
+
+    /**
      * @return list<array{value: string, label: string}>
      */
     public static function options(): array

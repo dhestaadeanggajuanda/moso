@@ -33,7 +33,14 @@ defineProps<{
                             </a>
                         </li>
                         <li aria-hidden="true">/</li>
-                        <li>Berita</li>
+                        <li>
+                            <a
+                                :href="site.links.news"
+                                class="text-brand-700 font-semibold hover:underline"
+                            >
+                                Berita
+                            </a>
+                        </li>
                     </ol>
                 </nav>
 
@@ -103,14 +110,14 @@ defineProps<{
 
             <div class="border-line mt-12 border-t pt-6">
                 <a
-                    :href="site.links.home"
+                    :href="site.links.news"
                     class="group text-brand-700 hover:text-brand-900 inline-flex min-h-11 items-center gap-2 font-bold"
                 >
                     <ArrowLeft
                         class="ease-out-expo size-4 transition-transform duration-300 group-hover:-translate-x-1"
                         aria-hidden="true"
                     />
-                    Kembali ke beranda
+                    Berita lainnya
                 </a>
             </div>
         </div>
