@@ -4,9 +4,33 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Situs publik lanjutan:
+    - Halaman Informasi Publik `/ppid`: dokumen terbit per kategori (berkala, serta merta, setiap saat) dengan jumlah per kategori, penjelasan UU 14/2008, dan paginasi.
+    - Halaman E-SAKIP `/sakip`: dokumen terbit dikelompokkan per tahun dan diurutkan menurut siklus SAKIP (Renstra sampai LKjIP), dengan saringan tahun dan jenis dokumen.
+    - Indeks berita `/berita`: berita dinas terbit, terbaru lebih dulu, 12 per halaman, dengan saringan kategori. Blok NewsGridHybrid mendapat tautan "Lihat semua berita" (mengikuti kategori blok), dan detail berita menautkan kembali ke indeks.
+    - Unggah logo Pemkot dan logo dinas di halaman Pengaturan admin (JPG, PNG, atau WebP, maks. 2 MB), beserta tombol hapus logo.
+    - `site.links` kini memuat `news`, `ppid`, dan `sakip`. Partial tema baru: `PageHero`, `PageNav`, `FilterChips`, dan `DocumentRow`.
+- Terjemahan Bahasa Indonesia untuk pesan validasi, autentikasi, reset kata sandi, dan paginasi (`lang/id`, dengan cadangan `lang/en`).
+
+### Diubah
+
+- Tautan bawaan blok AksesCepat kini PPID, E-SAKIP, dan Pengaduan. Tile "Cari layanan" (yang menduplikasi kolom cari di banner) dan "Hubungi kami" dihapus dari bawaan; blok yang sudah tersimpan tidak berubah.
+- Kepala halaman dan paginasi daftar layanan memakai partial tema bersama (`PageHero`, `PageNav`), tanpa perubahan tampilan.
+
+### Dihapus
+
+- Hapus akun sendiri dari Pengaturan profil. Sebelumnya fitur ini memicu error 500 bila pengguna masih punya artikel; akun kini hanya dikelola Super Admin.
+
 ### Diperbaiki
 
 - Label blok AksesCepat tidak lagi meluap keluar petak. Empat tautan atau lebih kini tampil dua kolom di ponsel dan tablet, lalu empat kolom mulai lg. Sebelumnya empat kolom di semua lebar, dengan ruang label sekitar 60px di layar 360px. Tiga tautan tetap satu baris, dengan ikon di atas label sampai md (sebelumnya sm) agar label tidak terdesak ke padding di 640px. Ikon dalam satu baris kini sejajar, dan kata yang lebih lebar dari petak dibungkus di dalam petak.
+
+### Keamanan
+
+- Halaman PPID dan E-SAKIP hanya menampilkan dokumen terbit dan hanya mengirim tautan route unduhan, tidak pernah path storage.
+- Logo hanya bisa diisi lewat unggahan (`SecureUploadService`: re-encode WebP, nama UUID, SVG ditolak), dicek Policy pengaturan dan dibatasi 20/menit. Formulir pengaturan teks menolak key `site.logo_*`. Saat logo diganti, hanya berkas hasil unggahan yang dihapus.
 
 ## [3.1.0] - 2026-10-18
 
@@ -14,12 +38,6 @@ Fase 2 sampai 4: modul kepatuhan dan API publik, integrasi Media Center dan Page
 
 ### Ditambahkan
 
-- Situs publik lanjutan (setelah Fase 4):
-    - Halaman Informasi Publik `/ppid`: dokumen terbit per kategori (berkala, serta merta, setiap saat) dengan jumlah per kategori, penjelasan UU 14/2008, dan paginasi.
-    - Halaman E-SAKIP `/sakip`: dokumen terbit dikelompokkan per tahun dan diurutkan menurut siklus SAKIP (Renstra sampai LKjIP), dengan saringan tahun dan jenis dokumen.
-    - Indeks berita `/berita`: berita dinas terbit, terbaru lebih dulu, 12 per halaman, dengan saringan kategori. Blok NewsGridHybrid mendapat tautan "Lihat semua berita" (mengikuti kategori blok), dan detail berita menautkan kembali ke indeks.
-    - Unggah logo Pemkot dan logo dinas di halaman Pengaturan admin (JPG, PNG, atau WebP, maks. 2 MB), beserta tombol hapus logo.
-    - `site.links` kini memuat `news`, `ppid`, dan `sakip`. Partial tema baru: `PageHero`, `PageNav`, `FilterChips`, dan `DocumentRow`.
 - Fase 4, renderer publik dan tema:
     - Pluggable Themes: plugin Vite `virtual:themes` hanya mengompilasi tema di `VITE_THEMES` (JS dan CSS), alias `@theme`, dan `ThemeResolver` (tema halaman → `theme.active` → tema bawaan).
     - `Core/PageRenderer.vue` merender blok dengan `<component :is>` dari tema aktif; `BlockBoundary` mengisolasi blok yang gagal.
@@ -59,13 +77,6 @@ Fase 2 sampai 4: modul kepatuhan dan API publik, integrasi Media Center dan Page
 - Unggahan PDF diperiksa lewat MIME dan tanda tangan `%PDF-`. Nama unduhan dibentuk dari slug, bukan dari nama berkas pengguna.
 - URL menu dibatasi ke `/...` atau `http(s)://`. Penyusunan menu juga dicegah membentuk siklus induk-anak.
 - Rate limit unduhan dokumen: 30/menit per IP.
-- Halaman PPID dan E-SAKIP hanya menampilkan dokumen terbit dan hanya mengirim tautan route unduhan, tidak pernah path storage.
-- Logo hanya bisa diisi lewat unggahan (`SecureUploadService`: re-encode WebP, nama UUID, SVG ditolak), dicek Policy pengaturan dan dibatasi 20/menit. Formulir pengaturan teks menolak key `site.logo_*`. Saat logo diganti, hanya berkas hasil unggahan yang dihapus.
-
-### Diubah
-
-- Tautan bawaan blok AksesCepat kini PPID, E-SAKIP, dan Pengaduan. Tile "Cari layanan" (yang menduplikasi kolom cari di banner) dan "Hubungi kami" dihapus dari bawaan; blok yang sudah tersimpan tidak berubah.
-- Kepala halaman dan paginasi daftar layanan memakai partial tema bersama (`PageHero`, `PageNav`), tanpa perubahan tampilan.
 
 ### Diperbaiki
 
