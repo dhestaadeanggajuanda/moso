@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-10-19
+
+Login SSO OpenID Connect untuk pegawai dinas, berjalan berdampingan dengan login lokal selama masa transisi.
+
 ### Ditambahkan
 
 - Login SSO OpenID Connect (lihat `docs/SSO-ROADMAP.md`):
@@ -186,7 +190,8 @@ Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 d
 - Nilai pengaturan rahasia disimpan terenkripsi dan tidak pernah dikirim ke browser. Session terenkripsi.
 - Advisory npm tinypool (GHSA-5gmw-xhrv-c9v3) ditutup lewat `overrides`.
 
-[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.5.0...HEAD
+[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.6.0...HEAD
+[3.6.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.2.0...v3.3.0
