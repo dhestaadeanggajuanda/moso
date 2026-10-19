@@ -72,6 +72,24 @@ class SecurityCheck extends Command
             $this->check('Registrasi publik mati', ! Features::enabled(Features::registration()), true, 'hapus Features::registration() di config/fortify.php'),
             $this->check('Log tidak di level debug', $logLevel !== 'debug', false, 'LOG_LEVEL=warning atau error'),
             $this->check('Proxy tepercaya diatur', filled(config('trustedproxy.proxies')), false, 'TRUSTED_PROXIES, abaikan bila tanpa reverse proxy'),
+            ...$this->ssoChecks(),
+        ];
+    }
+
+    /**
+     * Pemeriksaan SSO, hanya bila SSO_ENABLED=true.
+     *
+     * @return list<array{label: string, passed: bool, required: bool, hint: string}>
+     */
+    private function ssoChecks(): array
+    {
+        if (! config('sso.enabled')) {
+            return [];
+        }
+
+        return [
+            $this->check('SSO: issuer memakai HTTPS', str_starts_with((string) config('sso.issuer'), 'https://'), true, 'SSO_ISSUER=https://...'),
+            $this->check('SSO: client id dan secret terisi', filled(config('sso.client_id')) && filled(config('sso.client_secret')), true, 'SSO_CLIENT_ID, SSO_CLIENT_SECRET'),
         ];
     }
 

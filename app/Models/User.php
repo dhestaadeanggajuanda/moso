@@ -45,6 +45,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return $this->hasMany(Article::class, 'author_id');
     }
 
+    /**
+     * @return HasMany<SsoIdentity, $this>
+     */
+    public function ssoIdentities(): HasMany
+    {
+        return $this->hasMany(SsoIdentity::class);
+    }
+
     public function isSuperAdmin(): bool
     {
         return $this->hasRole(RoleName::SuperAdmin);

@@ -44,6 +44,7 @@ Aturan ini wajib dipatuhi di setiap perubahan kode. Matriks lengkapnya ada di `d
 - Pertahankan rate limit login dan 2FA Fortify. Role Super Admin dan Approver wajib 2FA.
 - Route reset kata sandi dibatasi `ThrottlePasswordResets` (grup middleware Fortify) dan selalu dijawab `PasswordResetLinkResponse`; jangan menampilkan pesan yang membedakan email terdaftar.
 - `AuthenticateSession` tetap di grup `web` agar sesi lain berakhir saat kata sandi berubah.
+- Login SSO hanya lewat `App\Services\Sso\OidcClient`: jangan melewati validasi ID token (tanda tangan JWKS, `iss`, `aud`, `exp`, `nonce`) dan jangan mempercayai klaim dari sumber lain. Akun tidak pernah dibuat otomatis dari IdP; penautan hanya lewat `SsoAccountLinker` (subject, atau email terverifikasi ke akun yang ada). Nilai `sso.mfa` di sesi hanya boleh diisi `SsoController`.
 
 ## A09 Logging dan Alerting
 

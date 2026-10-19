@@ -41,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
 
         RateLimiter::for('downloads', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+
+        RateLimiter::for('sso', fn (Request $request) => Limit::perMinute(20)->by($request->ip()));
     }
 
     /**

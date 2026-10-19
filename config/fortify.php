@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureLocalLoginEnabled;
 use App\Http\Middleware\ThrottlePasswordResets;
 use Laravel\Fortify\Features;
 
@@ -103,7 +104,8 @@ return [
     */
 
     // ThrottlePasswordResets: route reset kata sandi Fortify tidak punya limiter bawaan.
-    'middleware' => ['web', ThrottlePasswordResets::class],
+    // EnsureLocalLoginEnabled: login lokal bisa dimatikan setelah semua pegawai memakai SSO.
+    'middleware' => ['web', EnsureLocalLoginEnabled::class, ThrottlePasswordResets::class],
 
     /*
     |--------------------------------------------------------------------------

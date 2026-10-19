@@ -38,5 +38,8 @@
         <env name="SECURITY_ENFORCE_2FA" value="false" force="true"/>
         <env name="INERTIA_SSR_ENABLED" value="false" force="true"/>
         <env name="LOG_AUDIT_STACK" value="null" force="true"/>
+        <!-- Tes SSO mengatur config sendiri; SSO lokal di .env tidak boleh memengaruhi tes lain. -->
+        <env name="SSO_ENABLED" value="false" force="true"/>
+        <env name="SSO_LOCAL_LOGIN" value="true" force="true"/>
     </php>
 </phpunit>

@@ -47,6 +47,19 @@ it('fails when a required production setting is unsafe', function (string $key, 
     '2fa not enforced' => ['security.two_factor.enforce', false, 'SECURITY_ENFORCE_2FA=true'],
 ]);
 
+it('checks the sso connection only when sso is enabled', function () {
+    productionReadyConfig();
+    config(['sso.enabled' => true, 'sso.issuer' => 'http://sso.example.go.id/realms/pemkot', 'sso.client_id' => 'moso', 'sso.client_secret' => 'rahasia']);
+
+    $this->artisan('security:check')
+        ->expectsOutputToContain('SSO_ISSUER=https://')
+        ->assertFailed();
+
+    config(['sso.enabled' => false]);
+
+    $this->artisan('security:check')->assertSuccessful();
+});
+
 it('fails outside the production environment', function () {
     productionReadyConfig();
     app()['env'] = 'local';

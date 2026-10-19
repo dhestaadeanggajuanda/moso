@@ -4,6 +4,22 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Login SSO OpenID Connect (lihat `docs/SSO-ROADMAP.md`):
+    - Tombol "Masuk dengan SSO" di halaman login, route `/auth/sso/redirect` dan `/auth/sso/callback`. Authorization Code + PKCE S256, `state` dan `nonce` sekali pakai, ID token divalidasi penuh (tanda tangan JWKS, `iss`, `aud`/`azp`, `exp`/`iat`, `nonce`), kunci IdP diambil ulang saat dirotasi. Berlaku untuk IdP OIDC apa pun lewat discovery.
+    - Tabel `sso_identities`: akun ditautkan lewat klaim `sub`. Login pertama menautkan akun yang sudah ada bila IdP menyatakan email terverifikasi; akun tidak pernah dibuat otomatis, dan akun yang sudah tertaut tidak bisa diambil alih subject lain.
+    - MFA di IdP (klaim `amr`/`acr`, `SSO_MFA_AMR`/`SSO_MFA_ACR`) menggantikan 2FA aplikasi; tanpa bukti MFA, 2FA aplikasi yang aktif tetap diminta.
+    - Logout mengakhiri sesi di IdP (RP-initiated logout).
+    - `SSO_LOCAL_LOGIN=false` mematikan login password, passkey, dan reset kata sandi setelah semua pegawai memakai SSO.
+    - Log audit `sso.linked`, `sso.login`, `sso.authenticated`, dan `sso.failed` (tanpa token). `php artisan security:check` ikut memeriksa issuer HTTPS dan kredensial klien.
+    - Keycloak lokal untuk pengembangan (profil Docker `sso`, realm `docker/keycloak/moso-realm.json`).
+    - Dependensi baru: `firebase/php-jwt`.
+
+### Diperbaiki
+
+- Log audit di lingkungan tes tidak lagi jatuh ke logger darurat (`LOG_AUDIT_STACK=null` dibaca sebagai channel `null`).
+
 ## [3.5.0] - 2026-10-19
 
 Fase 8: audit dan hardening OWASP Top 10:2025 untuk seluruh kode, termasuk perlindungan tautan reset kata sandi, pembatasan reset, akhir sesi lintas perangkat, dan penguncian artikel terbit untuk Approver.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\SsoController;
 use App\Http\Controllers\Site\ArticleController;
 use App\Http\Controllers\Site\DocumentDownloadController;
 use App\Http\Controllers\Site\PageController;
@@ -21,6 +22,12 @@ Route::get('sakip', [SakipController::class, 'index'])->name('site.sakip.index')
 Route::middleware('throttle:downloads')->prefix('unduh')->name('documents.')->group(function () {
     Route::get('ppid/{publicDocument:slug}', [DocumentDownloadController::class, 'ppid'])->name('ppid.download');
     Route::get('sakip/{sakip}', [DocumentDownloadController::class, 'sakip'])->name('sakip.download');
+});
+
+// Login SSO OpenID Connect (404 bila SSO_ENABLED=false). Lihat docs/SSO-ROADMAP.md.
+Route::middleware(['guest', 'throttle:sso'])->prefix('auth/sso')->name('sso.')->group(function () {
+    Route::get('redirect', [SsoController::class, 'redirect'])->name('redirect');
+    Route::get('callback', [SsoController::class, 'callback'])->name('callback');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

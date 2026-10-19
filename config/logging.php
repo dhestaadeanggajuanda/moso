@@ -74,10 +74,11 @@ return [
         ],
 
         // Jejak audit keamanan (OWASP A09): login, perubahan peran, transisi status artikel.
-        // Tes mengarahkan ke channel `null` lewat LOG_AUDIT_STACK di phpunit.xml.
+        // Tes mengarahkan ke channel `null` lewat LOG_AUDIT_STACK di phpunit.xml. env() membaca
+        // "null" sebagai null, jadi daftar kosong berarti channel `null` (bukan channel tanpa nama).
         'audit' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_AUDIT_STACK', 'audit_file')),
+            'channels' => array_values(array_filter(explode(',', (string) env('LOG_AUDIT_STACK', 'audit_file')))) ?: ['null'],
             'ignore_exceptions' => false,
         ],
 

@@ -23,6 +23,7 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 | Tema                                  | `resources/js/Themes/{NamaTema}/{Layouts,Components,Views,Partials}` + `theme.css`                                                                                                  |
 | Halaman situs publik                  | `resources/js/pages/site/*` (memuat `Layouts/SiteLayout` dan `Views/*` tema aktif lewat `Core/themes.ts`)                                                                           |
 | Widget aksesibilitas                  | `packages/a11y-widget` (workspace npm `@moso/a11y-widget`, Web Component vanilla TS, tes `npm run test:widget`); dipasang di halaman `site/*` oleh `resources/js/lib/a11yWidget.ts` |
+| Login SSO (OIDC)                      | `App\Services\Sso\{OidcClient,SsoAccountLinker,SsoConfig}`, `Auth\SsoController`, `config/sso.php`, tabel `sso_identities`; panduan `docs/SSO-ROADMAP.md`                           |
 
 ## Page Builder
 

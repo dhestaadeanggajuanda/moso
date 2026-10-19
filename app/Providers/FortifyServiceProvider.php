@@ -5,7 +5,9 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Http\Middleware\ThrottlePasswordResets;
+use App\Http\Responses\LogoutResponse;
 use App\Http\Responses\PasswordResetLinkResponse;
+use App\Services\Sso\SsoConfig;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -14,6 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
+use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
 use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -28,6 +31,9 @@ class FortifyServiceProvider extends ServiceProvider
         // Email terdaftar atau tidak, jawabannya sama (anti-enumerasi akun).
         $this->app->bind(SuccessfulPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
         $this->app->bind(FailedPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
+
+        // Sesi SSO ikut diakhiri di IdP saat logout (RP-initiated logout).
+        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
     }
 
     /**
@@ -55,8 +61,10 @@ class FortifyServiceProvider extends ServiceProvider
     private function configureViews(): void
     {
         Fortify::loginView(fn (Request $request) => Inertia::render('auth/Login', [
-            'canResetPassword' => Features::enabled(Features::resetPasswords()),
+            'canResetPassword' => Features::enabled(Features::resetPasswords()) && SsoConfig::localLoginEnabled(),
             'status' => $request->session()->get('status'),
+            'localLogin' => SsoConfig::localLoginEnabled(),
+            'sso' => SsoConfig::enabled() ? ['label' => SsoConfig::label()] : null,
         ]));
 
         Fortify::resetPasswordView(fn (Request $request) => Inertia::render('auth/ResetPassword', [
