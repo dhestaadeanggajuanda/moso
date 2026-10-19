@@ -124,8 +124,11 @@ return [
      * When set to true, Laravel\Octane\Events\OperationTerminated event listener will be registered
      * this will refresh permissions on every TickTerminated, TaskTerminated and RequestTerminated
      * NOTE: This should not be needed in most cases, but an Octane/Vapor combination benefited from it.
+     *
+     * Moso: aktif. Di Octane setiap worker menyimpan daftar permission di memori; tanpa reset,
+     * peran yang dicabut di satu worker masih berlaku di worker lain (OWASP A01).
      */
-    'register_octane_reset_listener' => false,
+    'register_octane_reset_listener' => true,
 
     /*
      * Events will fire when a role or permission is assigned/unassigned:

@@ -1,0 +1,77 @@
+# Server SSO (Keycloak) untuk moso, di server terpisah dari aplikasi. Panduan: docs/DEPLOY.md
+#
+#   cp docker/deploy/keycloak/.env.example docker/deploy/keycloak/.env   # lalu isi
+#   docker compose -f docker/deploy/keycloak/compose.yaml up -d
+#
+# HTTPS diakhiri reverse proxy di server ini, yang meneruskan ke 127.0.0.1:KEYCLOAK_HTTP_PORT
+# dengan header X-Forwarded-For/Proto/Host. Realm "moso" dan klien portal diimpor saat start pertama
+# dari docker/keycloak/moso-realm.json; perubahan berikutnya lewat console admin.
+
+name: moso-sso
+
+services:
+    keycloak:
+        image: quay.io/keycloak/keycloak:26.7.5
+        restart: unless-stopped
+        command: ['start', '--import-realm']
+        environment:
+            KC_DB: mysql
+            KC_DB_URL_HOST: mysql
+            KC_DB_URL_DATABASE: ${KC_DB_DATABASE:-keycloak}
+            KC_DB_USERNAME: ${KC_DB_USERNAME:-keycloak}
+            KC_DB_PASSWORD: ${KC_DB_PASSWORD:?KC_DB_PASSWORD wajib diisi di .env}
+            # URL publik Keycloak (sama persis untuk browser dan server aplikasi), mis. https://sso.dinas.example.go.id
+            KC_HOSTNAME: ${KC_HOSTNAME:?KC_HOSTNAME wajib diisi di .env}
+            KC_HTTP_ENABLED: 'true'
+            KC_PROXY_HEADERS: xforwarded
+            KC_HEALTH_ENABLED: 'true'
+            KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USER:-admin}
+            KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:?KC_ADMIN_PASSWORD wajib diisi di .env}
+            # Dipakai realm import: URL portal (redirect & logout) dan kredensial klien.
+            MOSO_APP_URL: ${MOSO_APP_URL:?MOSO_APP_URL wajib diisi di .env}
+            MOSO_SSO_CLIENT_ID: ${MOSO_SSO_CLIENT_ID:-moso-portal}
+            MOSO_SSO_CLIENT_SECRET: ${MOSO_SSO_CLIENT_SECRET:?MOSO_SSO_CLIENT_SECRET wajib diisi di .env}
+        ports:
+            - '127.0.0.1:${KEYCLOAK_HTTP_PORT:-8080}:8080'
+        volumes:
+            - ../../keycloak:/opt/keycloak/data/import:ro
+        depends_on:
+            mysql:
+                condition: service_healthy
+        healthcheck:
+            # Image Keycloak tanpa curl: cek /health/ready di port manajemen 9000 lewat bash.
+            test:
+                [
+                    'CMD-SHELL',
+                    "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '\"UP\"' <&3",
+                ]
+            interval: 30s
+            timeout: 10s
+            start_period: 120s
+            retries: 3
+
+    mysql:
+        image: mysql:8.4
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: ${KC_DB_ROOT_PASSWORD:?KC_DB_ROOT_PASSWORD wajib diisi di .env}
+            MYSQL_DATABASE: ${KC_DB_DATABASE:-keycloak}
+            MYSQL_USER: ${KC_DB_USERNAME:-keycloak}
+            MYSQL_PASSWORD: ${KC_DB_PASSWORD:?KC_DB_PASSWORD wajib diisi di .env}
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - keycloak-mysql:/var/lib/mysql
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+volumes:
+    keycloak-mysql:

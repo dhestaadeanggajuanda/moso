@@ -1,6 +1,6 @@
 {
     "realm": "moso",
-    "displayName": "SSO Uji Moso",
+    "displayName": "SSO Portal Moso",
     "enabled": true,
     "sslRequired": "external",
     "registrationAllowed": false,
@@ -12,7 +12,7 @@
     "clients": [
         {
             "clientId": "${MOSO_SSO_CLIENT_ID}",
-            "name": "Portal Moso (lokal)",
+            "name": "Portal Moso",
             "enabled": true,
             "protocol": "openid-connect",
             "publicClient": false,
@@ -24,14 +24,11 @@
             "serviceAccountsEnabled": false,
             "consentRequired": false,
             "frontchannelLogout": false,
-            "redirectUris": [
-                "http://localhost:${MOSO_APP_PORT}/auth/sso/callback",
-                "http://127.0.0.1:${MOSO_APP_PORT}/auth/sso/callback"
-            ],
+            "redirectUris": ["${MOSO_APP_URL}/auth/sso/callback"],
             "webOrigins": [],
             "attributes": {
                 "pkce.code.challenge.method": "S256",
-                "post.logout.redirect.uris": "http://localhost:${MOSO_APP_PORT}##http://127.0.0.1:${MOSO_APP_PORT}##http://localhost:${MOSO_APP_PORT}/##http://127.0.0.1:${MOSO_APP_PORT}/"
+                "post.logout.redirect.uris": "${MOSO_APP_URL}##${MOSO_APP_URL}/"
             }
         }
     ]

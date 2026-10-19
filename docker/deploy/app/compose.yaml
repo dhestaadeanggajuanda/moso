@@ -1,0 +1,148 @@
+# Server aplikasi moso (produksi / server development). Panduan: docs/DEPLOY.md
+#
+#   cp docker/deploy/app/.env.example docker/deploy/app/.env   # lalu isi
+#   docker compose -f docker/deploy/app/compose.yaml up -d --build
+#
+# RustFS (object storage) dan Keycloak (SSO) berjalan di server terpisah; alamatnya diisi di .env.
+# HTTPS diakhiri reverse proxy yang sudah ada di server ini, yang meneruskan ke 127.0.0.1:APP_HTTP_PORT.
+
+# Berbeda dari compose pengembangan (docker/compose.yaml, proyek "moso") agar volume tidak tertukar.
+name: moso-app
+
+x-app-environment: &app-environment
+    DB_HOST: mysql
+    DB_PORT: 3306
+    REDIS_HOST: redis
+    REDIS_PORT: 6379
+    INERTIA_SSR_URL: http://ssr:13714
+
+x-app: &app
+    image: ${MOSO_APP_IMAGE:-moso-app:latest}
+    env_file: .env
+    environment: *app-environment
+    restart: unless-stopped
+    depends_on:
+        mysql:
+            condition: service_healthy
+        redis:
+            condition: service_healthy
+    volumes:
+        # Log aplikasi dan log audit (A09) disimpan di luar container.
+        - storage-logs:/app/storage/logs
+
+services:
+    app:
+        <<: *app
+        build:
+            context: ../../..
+            target: app
+            args:
+                VITE_THEMES: ${VITE_THEMES:-TemaModern}
+                VITE_APP_NAME: ${APP_NAME:-Portal Dinas}
+        environment:
+            <<: *app-environment
+            RUN_MIGRATIONS: 'true'
+        ports:
+            - '127.0.0.1:${APP_HTTP_PORT:-8000}:8000'
+        healthcheck:
+            # Header Host = host APP_URL: TrustHosts menolak host lain (termasuk 127.0.0.1) dengan 400.
+            test:
+                [
+                    'CMD',
+                    'php',
+                    '-r',
+                    '$$host = parse_url((string) getenv("APP_URL"), PHP_URL_HOST); $$context = stream_context_create(["http" => ["header" => "Host: $$host"]]); exit(@file_get_contents("http://127.0.0.1:8000/up", false, $$context) === false ? 1 : 0);',
+                ]
+            interval: 30s
+            timeout: 5s
+            start_period: 60s
+            retries: 3
+
+    worker:
+        <<: *app
+        command:
+            [
+                'php',
+                'artisan',
+                'queue:work',
+                '--sleep=3',
+                '--tries=3',
+                '--max-time=3600',
+            ]
+        # HEALTHCHECK bawaan image FrankenPHP memeriksa server web; container ini tidak menjalankannya.
+        healthcheck:
+            disable: true
+        depends_on:
+            app:
+                condition: service_healthy
+
+    scheduler:
+        <<: *app
+        command: ['php', 'artisan', 'schedule:work']
+        healthcheck:
+            disable: true
+        depends_on:
+            app:
+                condition: service_healthy
+
+    # Render halaman publik di server (SEO). Tidak dibuka ke luar: hanya app yang memanggilnya.
+    ssr:
+        image: ${MOSO_SSR_IMAGE:-moso-ssr:latest}
+        build:
+            context: ../../..
+            target: ssr
+            args:
+                VITE_THEMES: ${VITE_THEMES:-TemaModern}
+                VITE_APP_NAME: ${APP_NAME:-Portal Dinas}
+        restart: unless-stopped
+
+    mysql:
+        image: mysql:8.4
+        restart: unless-stopped
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD wajib diisi di .env}
+            MYSQL_DATABASE: ${DB_DATABASE:-moso}
+            MYSQL_USER: ${DB_USERNAME:-moso}
+            MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD wajib diisi di .env}
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+        volumes:
+            - mysql-data:/var/lib/mysql
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'mysqladmin ping -h 127.0.0.1 -u root -p"$$MYSQL_ROOT_PASSWORD" --silent',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+    redis:
+        image: redis:8.8.3-alpine
+        restart: unless-stopped
+        command:
+            [
+                'sh',
+                '-c',
+                'exec redis-server --appendonly yes --requirepass "$$REDIS_PASSWORD"',
+            ]
+        environment:
+            REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD wajib diisi di .env}
+        volumes:
+            - redis-data:/data
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'redis-cli -a "$$REDIS_PASSWORD" --no-auth-warning ping | grep -q PONG',
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+
+volumes:
+    mysql-data:
+    redis-data:
+    storage-logs:

@@ -78,10 +78,12 @@ Sesudah deploy, `php artisan security:check` ikut memeriksa issuer HTTPS dan kre
     docker compose -f docker/compose.yaml --env-file .env --profile sso up -d keycloak
     ```
 
-    Realm `moso` dan klien `moso-portal` diimpor otomatis dari `docker/keycloak/moso-realm.json` (redirect URI untuk `localhost:8010` dan `127.0.0.1:8010`). Console admin: `http://localhost:8180`.
+    Realm `moso` dan klien `moso-portal` diimpor otomatis dari `docker/keycloak/moso-realm.json` (redirect URI = `APP_URL/auth/sso/callback`, jadi buka portal lewat host yang sama dengan `APP_URL`). Console admin: `http://localhost:8180`.
 
 3. Di console admin, realm `moso` → Users → buat pengguna dengan email yang sama dengan akun portal yang sudah ada, centang "Email verified", lalu atur kata sandinya.
 4. Buka `/login`, klik "Masuk dengan SSO". Login pertama menautkan akun; login berikutnya memakai `sub`.
+
+Untuk server development dan produksi, pakai `docker/deploy/keycloak` (mode produksi dengan MySQL, lihat `docs/DEPLOY.md`); realm yang sama diimpor dengan `MOSO_APP_URL` sebagai URL portal.
 
 Data Keycloak lokal tidak disimpan di volume: membuat ulang container menghapus pengguna uji, dan subject baru tidak bisa mengambil alih akun yang sudah tertaut (hapus baris `sso_identities` lama bila perlu).
 

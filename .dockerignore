@@ -1,0 +1,64 @@
+# Konteks build image produksi (Dockerfile). Rahasia dan berkas pengembangan tidak ikut masuk.
+.git
+.github
+.env
+.env.*
+!.env.example
+auth.json
+
+# Hasil build dan dependensi dibuat ulang di dalam image
+node_modules
+packages/*/node_modules
+packages/*/dist
+vendor
+public/build
+public/hot
+public/frankenphp-worker.php
+public/storage
+bootstrap/ssr
+bootstrap/cache/*.php
+resources/js/actions
+resources/js/routes
+resources/js/wayfinder
+
+# Data dan log lokal
+storage/app/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/testing/*
+storage/framework/views/*
+storage/logs/*
+storage/pail
+storage/*.key
+.phpunit.cache
+.phpunit.result.cache
+
+# Alat agen AI, editor, dan desain
+.agents
+.ai
+.amp
+.claude
+.codex
+.cursor
+.factory
+.gemini
+.grok
+.impeccable
+.junie
+.kiro
+.pi
+.idea
+.vscode
+.zed
+.mcp.json
+AGENTS.md
+CLAUDE.md
+boost.json
+
+# Tidak dibutuhkan saat runtime (kecuali entrypoint container)
+docker
+!docker/deploy/app/entrypoint.sh
+!docker/deploy/app/php.ini
+docs
+tests
+*.md

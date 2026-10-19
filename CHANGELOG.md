@@ -4,6 +4,25 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Deploy dengan Docker (panduan `docs/DEPLOY.md`):
+    - `Dockerfile` multi-stage: Laravel Octane di FrankenPHP dengan PHP 8.5 (berjalan sebagai `www-data`), dan image terpisah untuk server SSR Inertia. Aset dan bundle SSR dibangun di dalam image.
+    - `docker/deploy/app/compose.yaml`: app, queue worker, scheduler, SSR, MySQL 8.4, dan Redis 8 untuk server aplikasi. RustFS dan Keycloak di server terpisah lewat `.env`. Port hanya terikat ke `127.0.0.1` di belakang reverse proxy HTTPS.
+    - `docker/deploy/keycloak/compose.yaml`: Keycloak 26 mode produksi dengan MySQL untuk server SSO terpisah, realm `moso` diimpor otomatis.
+    - Contoh `.env` untuk kedua server, `php.ini` produksi, dan entrypoint yang membuat cache konfigurasi saat start dan menjalankan migrasi di container `app`.
+- CI menguji PHP 8.3 dan 8.5, dan memastikan image produksi tetap bisa dibangun.
+- Dependensi baru: `laravel/octane`.
+
+### Diubah
+
+- Realm Keycloak (`docker/keycloak/moso-realm.json`) kini mengambil URL portal dari `MOSO_APP_URL`, sehingga sama untuk lokal, server development, dan produksi.
+- Alamat server SSR Inertia bisa diatur lewat `INERTIA_SSR_URL`.
+
+### Keamanan
+
+- Di Octane, daftar permission spatie di-reset setiap request, agar peran yang dicabut tidak masih berlaku di worker lain.
+
 ## [3.6.0] - 2026-10-19
 
 Login SSO OpenID Connect untuk pegawai dinas, berjalan berdampingan dengan login lokal selama masa transisi.

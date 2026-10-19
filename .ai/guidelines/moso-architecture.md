@@ -24,6 +24,7 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 | Halaman situs publik                  | `resources/js/pages/site/*` (memuat `Layouts/SiteLayout` dan `Views/*` tema aktif lewat `Core/themes.ts`)                                                                           |
 | Widget aksesibilitas                  | `packages/a11y-widget` (workspace npm `@moso/a11y-widget`, Web Component vanilla TS, tes `npm run test:widget`); dipasang di halaman `site/*` oleh `resources/js/lib/a11yWidget.ts` |
 | Login SSO (OIDC)                      | `App\Services\Sso\{OidcClient,SsoAccountLinker,SsoConfig}`, `Auth\SsoController`, `config/sso.php`, tabel `sso_identities`; panduan `docs/SSO-ROADMAP.md`                           |
+| Deploy (Docker)                       | `Dockerfile` (Octane + FrankenPHP PHP 8.5, image SSR), `docker/deploy/{app,keycloak}`; panduan `docs/DEPLOY.md`. `docker/compose.yaml` hanya untuk pengembangan lokal               |
 
 ## Page Builder
 
@@ -36,6 +37,11 @@ CMS portal berita untuk dinas di Kota Singkawang, dengan Pluggable Themes, Drag 
 - Blok `NewsGridHybrid` menggabungkan artikel lokal dengan Media Center bila `props.fetch_media_center = true`. Kata kunci diambil dari `props.media_center_keyword`.
 - Menambah tipe blok baru: buat kelas di `app/Services/PageBuilder/Blocks` (turunan `AbstractBlock`), daftarkan di `BlockRegistry::BLOCKS`, tambahkan tipenya di `resources/js/types/blocks.ts`, ikon/ringkasan di `resources/js/Builder/blockDefinitions.ts`, inspector di `resources/js/Builder/inspectors`, dan komponen tema dengan nama yang sama. Nilai bawaan props hanya didefinisikan di server (`defaults()`).
 - Integrasi Media Center hanya lewat `App\Services\MediaCenter\MediaCenterApiService` (Http facade, cache stale-while-revalidate, tidak pernah melempar ke pemanggil). Berita dari mana pun dinormalisasi menjadi `App\Services\News\NewsItem` (teks polos).
+
+## Octane (produksi)
+
+- Produksi berjalan di Laravel Octane (FrankenPHP): aplikasi di-boot sekali per worker. Jangan menyimpan data per-request (request, user, config) di singleton atau properti static; pakai helper `request()`/`config()` di dalam method, atau binding `scoped`.
+- Pengembangan lokal dan tes tetap memakai `php artisan serve`/Pest biasa; perilaku khusus Octane diuji di image Docker.
 
 ## Storage
 
