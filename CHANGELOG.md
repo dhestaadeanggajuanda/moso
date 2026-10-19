@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-10-19
+
+Deploy dengan Docker: Laravel Octane di FrankenPHP (PHP 8.5) untuk server aplikasi, dan Keycloak di server terpisah.
+
 ### Ditambahkan
 
 - Deploy dengan Docker (panduan `docs/DEPLOY.md`):
@@ -209,7 +213,8 @@ Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 d
 - Nilai pengaturan rahasia disimpan terenkripsi dan tidak pernah dikirim ke browser. Session terenkripsi.
 - Advisory npm tinypool (GHSA-5gmw-xhrv-c9v3) ditutup lewat `overrides`.
 
-[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.6.0...HEAD
+[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.7.0...HEAD
+[3.7.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.3.0...v3.4.0
