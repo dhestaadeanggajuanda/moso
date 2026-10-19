@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-10-19
+
+Fase 8: audit dan hardening OWASP Top 10:2025 untuk seluruh kode, termasuk perlindungan tautan reset kata sandi, pembatasan reset, akhir sesi lintas perangkat, dan penguncian artikel terbit untuk Approver.
+
 ### Ditambahkan
 
 - Fase 8, audit dan hardening OWASP Top 10:2025 (laporan lengkap di `docs/SECURITY-OWASP.md`, bagian "Audit Fase 8"):
@@ -166,7 +170,8 @@ Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 d
 - Nilai pengaturan rahasia disimpan terenkripsi dan tidak pernah dikirim ke browser. Session terenkripsi.
 - Advisory npm tinypool (GHSA-5gmw-xhrv-c9v3) ditutup lewat `overrides`.
 
-[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.4.0...HEAD
+[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.5.0...HEAD
+[3.5.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.4.0...v3.5.0
 [3.4.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.1.0...v3.2.0
