@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Middleware\ThrottlePasswordResets;
+use App\Http\Responses\PasswordResetLinkResponse;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -11,6 +13,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
+use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
@@ -21,7 +25,9 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Email terdaftar atau tidak, jawabannya sama (anti-enumerasi akun).
+        $this->app->bind(SuccessfulPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
+        $this->app->bind(FailedPasswordResetLinkRequestResponse::class, PasswordResetLinkResponse::class);
     }
 
     /**
@@ -85,6 +91,14 @@ class FortifyServiceProvider extends ServiceProvider
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
+        });
+
+        // Per email: mencegah banjir email reset ke satu alamat. Per IP: mencegah menebak email.
+        RateLimiter::for(ThrottlePasswordResets::LIMITER, function (Request $request) {
+            return [
+                Limit::perMinute(3)->by('email:'.Str::transliterate(Str::lower((string) $request->input('email')))),
+                Limit::perMinute(10)->by('ip:'.$request->ip()),
+            ];
         });
 
         RateLimiter::for('passkeys', function (Request $request) {

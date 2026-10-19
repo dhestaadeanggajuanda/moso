@@ -45,6 +45,7 @@ it('rejects unsafe urls', function (string $url) {
     'javascript scheme' => 'javascript:alert(1)',
     'data scheme' => 'data:text/html,<script>alert(1)</script>',
     'protocol relative' => '//evil.example',
+    'backslash protocol relative' => '/\evil.example',
     'bare domain' => 'evil.example',
 ]);
 

@@ -173,6 +173,16 @@ describe('update', function () {
         Storage::disk('s3')->assertMissing('articles/old.webp');
         Storage::disk('s3')->assertExists($article->image_path);
     });
+
+    it('stops an editor from changing an article that is already published', function () {
+        $article = Article::factory()->published()->create(['title' => 'Judul terbit']);
+
+        $this->actingAs(userWithRole(RoleName::Editor))
+            ->put(route('admin.articles.update', $article), ['title' => 'Diubah diam-diam', 'body' => '<p>Isi</p>'])
+            ->assertForbidden();
+
+        expect($article->refresh()->title)->toBe('Judul terbit');
+    });
 });
 
 describe('destroy', function () {
@@ -184,6 +194,16 @@ describe('destroy', function () {
             ->assertRedirect(route('admin.articles.index'));
 
         $this->assertSoftDeleted($article);
+    });
+
+    it('stops an editor from taking down a published article', function () {
+        $article = Article::factory()->published()->create();
+
+        $this->actingAs(userWithRole(RoleName::Editor))
+            ->delete(route('admin.articles.destroy', $article))
+            ->assertForbidden();
+
+        $this->assertNotSoftDeleted($article);
     });
 });
 

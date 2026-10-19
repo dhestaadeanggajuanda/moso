@@ -3,11 +3,13 @@
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SecurityHeaders;
+use App\Support\TrustedHosts;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,9 +21,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(SecurityHeaders::class);
 
+        // Tolak header Host asing (tautan reset kata sandi tidak bisa diracuni).
+        // Tidak aktif di lingkungan local dan saat pengujian. Proxy tepercaya: config/trustedproxy.php.
+        $middleware->trustHosts(at: TrustedHosts::patterns(...), subdomains: false);
+
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
         $middleware->web(append: [
+            // Sesi di perangkat lain berakhir saat kata sandi diganti atau direset.
+            AuthenticateSession::class,
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

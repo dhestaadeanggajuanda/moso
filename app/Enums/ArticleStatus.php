@@ -37,6 +37,15 @@ enum ArticleStatus: string
     }
 
     /**
+     * Status sesudah diterbitkan Approver. Mengubah atau menghapusnya butuh hak
+     * terbitkan, agar isi yang tayang tidak berubah tanpa prinsip empat mata.
+     */
+    public function requiresPublisher(): bool
+    {
+        return in_array($this, [self::Published, self::Archived], true);
+    }
+
+    /**
      * @return list<array{value: string, label: string}>
      */
     public static function options(): array

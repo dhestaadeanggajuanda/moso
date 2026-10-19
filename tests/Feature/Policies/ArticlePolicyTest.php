@@ -45,13 +45,36 @@ test('a kontributor may delete own article only while draft', function (ArticleS
     [ArticleStatus::Submitted, false],
 ]);
 
-test('editors, approvers, and super admins may edit and delete any article', function (RoleName $role) {
+test('editors, approvers, and super admins may edit and delete any article before it is published', function (RoleName $role, ArticleStatus $status) {
     $user = userWithRole($role);
-    $article = Article::factory()->published()->create();
+    $article = Article::factory()->status($status)->create();
 
     expect($user->can('update', $article))->toBeTrue()
         ->and($user->can('delete', $article))->toBeTrue();
-})->with([RoleName::SuperAdmin, RoleName::Approver, RoleName::Editor]);
+})->with([RoleName::SuperAdmin, RoleName::Approver, RoleName::Editor])
+    ->with([ArticleStatus::Submitted, ArticleStatus::ReadyToPublish]);
+
+test('only publishers may edit or delete a published or archived article', function (RoleName $role, ArticleStatus $status, bool $allowed) {
+    $user = userWithRole($role);
+    $article = Article::factory()->status($status)->create();
+
+    expect($user->can('update', $article))->toBe($allowed)
+        ->and($user->can('delete', $article))->toBe($allowed);
+})->with([
+    'editor, published' => [RoleName::Editor, ArticleStatus::Published, false],
+    'editor, archived' => [RoleName::Editor, ArticleStatus::Archived, false],
+    'approver, published' => [RoleName::Approver, ArticleStatus::Published, true],
+    'approver, archived' => [RoleName::Approver, ArticleStatus::Archived, true],
+    'super admin, published' => [RoleName::SuperAdmin, ArticleStatus::Published, true],
+]);
+
+test('a publisher may take down but not rewrite a published article they wrote', function () {
+    $approver = userWithRole(RoleName::Approver);
+    $article = Article::factory()->for($approver, 'author')->status(ArticleStatus::Published)->create();
+
+    expect($approver->can('update', $article))->toBeFalse()
+        ->and($approver->can('delete', $article))->toBeTrue();
+});
 
 test('nobody may force delete an article except through super admin bypass', function () {
     $article = Article::factory()->create();

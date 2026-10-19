@@ -6,7 +6,8 @@ Aturan ini wajib dipatuhi di setiap perubahan kode. Matriks lengkapnya ada di `d
 
 - Setiap aksi controller yang membaca atau mengubah data wajib diotorisasi lewat Policy (`$this->authorize()` / `Gate::authorize()` / `can` middleware). Pengecekan role di frontend hanya untuk tampilan, tidak pernah menjadi sumber otorisasi.
 - Kepemilikan dicek di Policy, misalnya Kontributor hanya boleh mengubah artikel miliknya (anti-IDOR).
-- Request HTTP keluar (Media Center) hanya ke base URL dari config, tidak pernah ke URL dari input pengguna atau JSON blok. Kata kunci divalidasi dengan regex `^[a-z0-9-]{1,50}$`.
+- Request HTTP keluar (Media Center) hanya ke base URL dari config, tidak pernah ke URL dari input pengguna atau JSON blok, dan tidak mengikuti redirect (`withoutRedirecting()`). Kata kunci divalidasi dengan regex `^[a-z0-9-]{1,50}$`.
+- Tautan buatan pengelola (menu, tombol blok, pengaturan) wajib lolos `App\Support\SafeUrl`; jangan membuat pola URL sendiri.
 - API publik `/api/v1` hanya mengembalikan data berstatus published dan memakai `throttle`.
 
 ## A02 Security Misconfiguration
@@ -14,6 +15,8 @@ Aturan ini wajib dipatuhi di setiap perubahan kode. Matriks lengkapnya ada di `d
 - Jangan melonggarkan CSP di `App\Http\Middleware\SecurityHeaders` (misalnya `'unsafe-inline'` atau `'unsafe-eval'` di script-src). Origin baru ditambahkan lewat `config/security.php` (`CSP_*`).
 - Inline `<script>` di Blade wajib memakai `nonce="{{ Vite::cspNonce() }}"`.
 - Registrasi publik Fortify tetap mati. Akun dibuat oleh Super Admin.
+- TrustHosts di `bootstrap/app.php` jangan dilepas: hanya host `APP_URL` dan `TRUSTED_HOSTS` yang dilayani. Proxy diatur lewat `TRUSTED_PROXIES` (`config/trustedproxy.php`), jangan `'*'` bila aplikasi bisa diakses langsung.
+- Jalankan `php artisan security:check` sesudah deploy produksi; tambahkan pemeriksaan baru di `App\Console\Commands\SecurityCheck` bila ada pengaturan keamanan baru di `.env`.
 
 ## A03 Software Supply Chain
 
@@ -34,10 +37,13 @@ Aturan ini wajib dipatuhi di setiap perubahan kode. Matriks lengkapnya ada di `d
 ## A06 / A08 Insecure Design dan Integrity
 
 - `content_blocks` divalidasi terhadap `BlockRegistry` sebelum disimpan. Jangan memakai `unserialize()` untuk input apa pun.
+- Prinsip empat mata: artikel terbit atau diarsipkan hanya diubah/dihapus pemegang hak terbitkan (`ArticleStatus::requiresPublisher()` di `ArticlePolicy`), dan isinya tidak diubah penulisnya sendiri.
 
 ## A07 Authentication Failures
 
 - Pertahankan rate limit login dan 2FA Fortify. Role Super Admin dan Approver wajib 2FA.
+- Route reset kata sandi dibatasi `ThrottlePasswordResets` (grup middleware Fortify) dan selalu dijawab `PasswordResetLinkResponse`; jangan menampilkan pesan yang membedakan email terdaftar.
+- `AuthenticateSession` tetap di grup `web` agar sesi lain berakhir saat kata sandi berubah.
 
 ## A09 Logging dan Alerting
 

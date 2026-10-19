@@ -4,6 +4,26 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Fase 8, audit dan hardening OWASP Top 10:2025 (laporan lengkap di `docs/SECURITY-OWASP.md`, bagian "Audit Fase 8"):
+    - Perintah `php artisan security:check` untuk memeriksa konfigurasi produksi (APP_DEBUG, HTTPS, cookie sesi, CSP, HSTS, 2FA, registrasi publik). Keluar dengan kode gagal bila ada pemeriksaan wajib yang tidak lolos, sehingga bisa dipakai di skrip deploy.
+    - Variabel `TRUSTED_PROXIES` (`config/trustedproxy.php`) untuk reverse proxy atau load balancer yang mengakhiri TLS, dan `TRUSTED_HOSTS` untuk host tambahan selain host `APP_URL`.
+
+### Diubah
+
+- Artikel yang sudah terbit atau diarsipkan kini hanya bisa diubah dan dihapus oleh Approver dan Super Admin. Editor tetap bisa mengubah artikel sampai statusnya siap terbit; koreksi artikel terbit lewat Approver. Penulis artikel tidak bisa mengubah isi artikelnya sendiri sesudah terbit (prinsip empat mata).
+- Pesan sesudah meminta tautan reset kata sandi kini sama untuk email terdaftar maupun tidak.
+
+### Keamanan
+
+- Tautan reset kata sandi tidak bisa lagi diarahkan ke domain penyerang lewat header `Host`: hanya host `APP_URL` dan `TRUSTED_HOSTS` yang dilayani (host lain dibalas 400). Health check load balancer ke `/up` harus mengirim host publik atau didaftarkan di `TRUSTED_HOSTS`.
+- Permintaan tautan reset dan penyimpanan kata sandi baru dibatasi (3 per menit per email, 10 per menit per IP), dan jawabannya tidak lagi membocorkan email mana yang terdaftar.
+- Sesi di perangkat lain berakhir saat kata sandi diganti atau direset.
+- Klien Media Center tidak lagi mengikuti redirect, dan tautan berita dengan kredensial atau port lain ditolak.
+- `HtmlSanitizer` membuang atribut `srcset`/`imagesrcset`; pola tautan aman menolak backslash (`/\evil`).
+- Route bertanda tangan `storage/{path}` milik disk lokal yang tidak dipakai dimatikan.
+
 ## [3.4.0] - 2026-10-19
 
 Fase 7: widget aksesibilitas WCAG 2.2 buatan sendiri yang bisa dipasang lintas aplikasi, terpasang di situs publik moso.

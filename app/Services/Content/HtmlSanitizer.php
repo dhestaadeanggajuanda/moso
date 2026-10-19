@@ -24,6 +24,9 @@ class HtmlSanitizer
             ->allowRelativeLinks()
             ->allowMediaSchemes(['https', 'http'])
             ->allowMediaHosts($this->mediaHosts())
+            // srcset tidak diperiksa sanitizer URL, sehingga bisa melewati daftar host gambar.
+            ->dropAttribute('srcset', '*')
+            ->dropAttribute('imagesrcset', '*')
             ->forceAttribute('a', 'rel', 'noopener noreferrer')
             ->forceHttpsUrls(app()->isProduction())
             ->withMaxInputLength(500_000);

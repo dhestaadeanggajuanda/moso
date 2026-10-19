@@ -22,6 +22,8 @@ it('only passes links with a safe scheme from the settings to the theme', functi
     'https' => ['https://www.lapor.go.id', 'https://www.lapor.go.id'],
     'javascript' => ['javascript:alert(1)', null],
     'protocol relative' => ['//evil.test', null],
+    'backslash protocol relative' => ['/\evil.test', null],
+    'internal path' => ['/pengaduan', '/pengaduan'],
 ]);
 
 it('resolves logo paths on the public disk and ignores anything else', function () {

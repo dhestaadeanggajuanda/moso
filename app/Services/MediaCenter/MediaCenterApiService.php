@@ -148,6 +148,8 @@ class MediaCenterApiService
     private function client(): PendingRequest
     {
         return Http::baseUrl((string) config('mediacenter.base_url'))
+            // Jangan ikuti redirect: server tidak boleh diarahkan ke host lain/internal (SSRF, A01).
+            ->withoutRedirecting()
             ->acceptJson()
             ->withUserAgent('MosoPortal/3 (+'.config('app.url').')')
             ->connectTimeout((int) config('mediacenter.connect_timeout'))
@@ -197,7 +199,8 @@ class MediaCenterApiService
     }
 
     /**
-     * URL http(s) yang hostnya sama dengan Media Center; selain itu ditolak.
+     * URL http(s) yang hostnya sama dengan Media Center, tanpa kredensial dan
+     * tanpa port lain; selain itu ditolak.
      */
     private function trustedUrl(mixed $url): ?string
     {
@@ -206,11 +209,14 @@ class MediaCenterApiService
         }
 
         $parts = parse_url($url);
-        $trustedHost = parse_url((string) config('mediacenter.base_url'), PHP_URL_HOST);
+        $base = parse_url((string) config('mediacenter.base_url'));
 
-        return in_array($parts['scheme'] ?? null, ['http', 'https'], true) && ($parts['host'] ?? null) === $trustedHost
-            ? $url
-            : null;
+        return in_array($parts['scheme'] ?? null, ['http', 'https'], true)
+            && ($parts['host'] ?? null) === ($base['host'] ?? false)
+            && ($parts['port'] ?? null) === ($base['port'] ?? null)
+            && ! isset($parts['user']) && ! isset($parts['pass'])
+                ? $url
+                : null;
     }
 
     private function plainText(mixed $html): ?string

@@ -33,7 +33,9 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Tidak dilayani lewat route storage/{path}: unggahan memakai S3, jadi
+            // route baca/tulis bertanda tangan itu hanya permukaan serangan (A02).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

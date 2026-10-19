@@ -12,7 +12,8 @@ return [
     */
 
     'reset' => 'Kata sandi Anda telah diatur ulang.',
-    'sent' => 'Tautan untuk mengatur ulang kata sandi telah kami kirim ke email Anda.',
+    // Sengaja sama untuk email terdaftar maupun tidak (anti-enumerasi akun).
+    'sent' => 'Jika email tersebut terdaftar, tautan untuk mengatur ulang kata sandi sudah kami kirim. Periksa kotak masuk Anda.',
     'throttled' => 'Mohon tunggu sebelum mencoba lagi.',
     'token' => 'Token pengaturan ulang kata sandi ini tidak valid.',
     'user' => 'Kami tidak dapat menemukan pengguna dengan alamat email tersebut.',

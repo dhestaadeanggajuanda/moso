@@ -43,4 +43,9 @@ return [
         'max_age' => (int) env('HSTS_MAX_AGE', 31536000),
     ],
 
+    // Host yang dilayani selain host APP_URL (cocok persis, tanpa subdomain).
+    // Request dengan header Host lain ditolak, agar tautan reset kata sandi
+    // tidak bisa diarahkan ke domain penyerang (App\Support\TrustedHosts).
+    'trusted_hosts' => $origins('TRUSTED_HOSTS'),
+
 ];

@@ -37,6 +37,11 @@ class ArticlePolicy
 
     public function update(User $user, Article $article): bool
     {
+        // Isi yang sudah tayang hanya diubah pemegang hak terbitkan, dan bukan penulisnya sendiri.
+        if ($article->status->requiresPublisher()) {
+            return $user->can(PermissionName::ArticlesPublish) && ! $this->owns($user, $article);
+        }
+
         if ($user->can(PermissionName::ArticlesUpdateAny)) {
             return true;
         }
@@ -48,6 +53,11 @@ class ArticlePolicy
 
     public function delete(User $user, Article $article): bool
     {
+        // Menghapus artikel terbit sama dengan menurunkannya dari situs: setara mengarsipkan.
+        if ($article->status->requiresPublisher()) {
+            return $user->can(PermissionName::ArticlesPublish);
+        }
+
         if ($user->can(PermissionName::ArticlesDeleteAny)) {
             return true;
         }

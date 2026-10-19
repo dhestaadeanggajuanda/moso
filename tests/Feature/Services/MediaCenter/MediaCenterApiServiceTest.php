@@ -55,6 +55,9 @@ it('drops links and images that point outside the media center host', function (
             'media_details' => ['sizes' => ['medium' => ['source_url' => 'https://evil.test/track-300.jpg']]],
         ]]]]),
         wpPost(5, 'Skema berbahaya', '2026-10-12T12:00:00', ['link' => 'javascript:alert(1)']),
+        wpPost(8, 'Host menumpang', '2026-10-12T12:00:00', ['link' => 'https://mc.test@evil.test/berita']),
+        wpPost(9, 'Dengan kredensial', '2026-10-12T12:00:00', ['link' => 'https://user:secret@mc.test/berita']),
+        wpPost(10, 'Port lain', '2026-10-12T12:00:00', ['link' => 'https://mc.test:8443/berita']),
     ])]);
 
     $items = app(MediaCenterApiService::class)->fetch('sosial', MediaCenterMode::Search);
@@ -62,6 +65,19 @@ it('drops links and images that point outside the media center host', function (
     expect($items)->toHaveCount(1)
         ->and($items[0]->title)->toBe('Gambar asing')
         ->and($items[0]->imageUrl)->toBeNull();
+});
+
+it('does not follow redirects away from the media center', function () {
+    Log::spy();
+
+    Http::fake([
+        'mc.test/*' => Http::response('', 302, ['Location' => 'http://169.254.169.254/latest/meta-data/']),
+        '*' => Http::response([wpPost(11, 'Tidak boleh sampai sini', '2026-10-12T12:00:00')]),
+    ]);
+
+    expect(app(MediaCenterApiService::class)->fetch('sosial', MediaCenterMode::Search))->toBe([]);
+
+    Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '169.254.169.254'));
 });
 
 it('never sends a request for an invalid keyword', function (string $keyword) {

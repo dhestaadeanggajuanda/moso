@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ThrottlePasswordResets;
 use Laravel\Fortify\Features;
 
 return [
@@ -101,7 +102,8 @@ return [
     |
     */
 
-    'middleware' => ['web'],
+    // ThrottlePasswordResets: route reset kata sandi Fortify tidak punya limiter bawaan.
+    'middleware' => ['web', ThrottlePasswordResets::class],
 
     /*
     |--------------------------------------------------------------------------

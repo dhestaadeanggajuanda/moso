@@ -17,6 +17,9 @@ it('removes dangerous markup', function (string $input, string $forbidden) {
     'inline style' => ['<p style="position:fixed">x</p>', 'style='],
     'iframe' => ['<iframe src="https://evil.example"></iframe>', '<iframe'],
     'foreign image host' => ['<img src="https://evil.example/track.png">', 'evil.example'],
+    'foreign image via srcset' => ['<img srcset="https://evil.example/track.png 1x">', 'evil.example'],
+    'picture source srcset' => ['<picture><source srcset="https://evil.example/a.png"></picture>', 'evil.example'],
+    'video poster' => ['<video poster="https://evil.example/p.png"></video>', 'evil.example'],
 ]);
 
 it('keeps safe formatting and images from the public bucket', function () {
