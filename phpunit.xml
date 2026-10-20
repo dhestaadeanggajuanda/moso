@@ -41,5 +41,7 @@
         <!-- Tes SSO mengatur config sendiri; SSO lokal di .env tidak boleh memengaruhi tes lain. -->
         <env name="SSO_ENABLED" value="false" force="true"/>
         <env name="SSO_LOCAL_LOGIN" value="true" force="true"/>
+        <!-- Tes asisten AI mengatur config sendiri; asisten lokal di .env tidak boleh dipanggil tes lain. -->
+        <env name="AGENTIC_ENABLED" value="false" force="true"/>
     </php>
 </phpunit>
