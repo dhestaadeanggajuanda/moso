@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\AiDraftKind;
 use App\Enums\ArticleAction;
 use App\Enums\ArticleCommentType;
 use App\Enums\ArticleStatus;
 use App\Enums\PermissionName;
+use App\Events\ArticlePublished;
+use App\Events\ArticleUnpublished;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ArticleRequest;
 use App\Models\Article;
+use App\Models\ArticleAiDraft;
 use App\Models\ArticleComment;
 use App\Models\Category;
 use App\Models\User;
+use App\Services\Agentic\AgenticClient;
 use App\Services\Content\HtmlSanitizer;
 use App\Services\Storage\SecureUploadService;
 use App\Services\Workflow\ArticleWorkflow;
@@ -123,13 +128,14 @@ class ArticleController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(AgenticClient $agentic): Response
     {
         Gate::authorize('create', Article::class);
 
         return Inertia::render('admin/articles/Form', [
             'article' => null,
             'categories' => $this->categoryOptions(),
+            'ai' => $this->aiOptions($agentic),
         ]);
     }
 
@@ -145,6 +151,7 @@ class ArticleController extends Controller
         DB::transaction(function () use ($article, $request) {
             $article->save();
             $article->categories()->sync($request->validated('category_ids', []));
+            $this->linkAiDraft($request, $article);
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Artikel disimpan sebagai draf.']);
@@ -152,7 +159,7 @@ class ArticleController extends Controller
         return to_route('admin.articles.edit', $article);
     }
 
-    public function edit(Request $request, Article $article, ArticleWorkflow $workflow): Response
+    public function edit(Request $request, Article $article, ArticleWorkflow $workflow, AgenticClient $agentic): Response
     {
         Gate::authorize('update', $article);
 
@@ -178,6 +185,7 @@ class ArticleController extends Controller
                 'revision_note' => $this->latestRevisionNote($article),
             ],
             'categories' => $this->categoryOptions(),
+            'ai' => $this->aiOptions($agentic),
         ]);
     }
 
@@ -197,10 +205,16 @@ class ArticleController extends Controller
         DB::transaction(function () use ($article, $request) {
             $article->save();
             $article->categories()->sync($request->validated('category_ids', []));
+            $this->linkAiDraft($request, $article);
         });
 
         if ($oldImage !== $article->image_path) {
             $uploads->delete($oldImage);
+        }
+
+        // Isi berita yang sudah tayang berubah: perbarui juga memori asisten AI.
+        if ($article->status === ArticleStatus::Published) {
+            ArticlePublished::dispatch($article);
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Artikel diperbarui.']);
@@ -214,6 +228,10 @@ class ArticleController extends Controller
 
         // Soft delete: gambar dipertahankan supaya artikel bisa dipulihkan.
         $article->delete();
+
+        if ($article->status === ArticleStatus::Published) {
+            ArticleUnpublished::dispatch($article);
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Artikel dihapus.']);
 
@@ -229,6 +247,38 @@ class ArticleController extends Controller
         $data['body'] = $sanitizer->sanitize($data['body']);
 
         return $data;
+    }
+
+    /**
+     * Tautkan draf asisten AI yang dipakai di form ke artikel ini, hanya bila draf
+     * itu milik pengguna yang sama (anti-IDOR) dan belum tertaut ke artikel lain.
+     */
+    private function linkAiDraft(ArticleRequest $request, Article $article): void
+    {
+        $draftId = $request->validated('ai_draft_id');
+
+        if ($draftId === null) {
+            return;
+        }
+
+        ArticleAiDraft::query()
+            ->whereKey($draftId)
+            ->whereBelongsTo($request->user())
+            ->where(fn (Builder $query) => $query->whereNull('article_id')->orWhere('article_id', $article->id))
+            ->update(['article_id' => $article->id]);
+    }
+
+    /**
+     * Pengaturan tombol "Tulis dengan AI" di form artikel.
+     *
+     * @return array{enabled: bool, kinds: list<array{value: string, label: string}>}
+     */
+    private function aiOptions(AgenticClient $agentic): array
+    {
+        return [
+            'enabled' => $agentic->enabled(),
+            'kinds' => AiDraftKind::options(),
+        ];
     }
 
     /**

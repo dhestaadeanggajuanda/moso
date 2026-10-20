@@ -25,6 +25,8 @@ export type AdminAbilities = {
     settings: boolean;
     /** Manajemen akun pegawai: hanya Super Admin. */
     users: boolean;
+    /** Halaman Asisten AI: Super Admin dan AGENTIC_ENABLED=true. */
+    assistant: boolean;
 };
 
 export type Auth = {

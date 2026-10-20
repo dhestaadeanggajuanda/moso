@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Storage;
  * @property-read User $author
  * @property-read Collection<int, Category> $categories
  * @property-read Collection<int, ArticleComment> $comments
+ * @property-read Collection<int, ArticleAiDraft> $aiDrafts
  * @property-read string|null $image_url
  */
 #[Fillable(['title', 'slug', 'excerpt', 'body', 'image_path', 'image_alt'])]
@@ -91,6 +92,16 @@ class Article extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(ArticleComment::class)->oldest()->oldest('id');
+    }
+
+    /**
+     * Draf asisten AI yang tertaut ke artikel ini.
+     *
+     * @return HasMany<ArticleAiDraft, $this>
+     */
+    public function aiDrafts(): HasMany
+    {
+        return $this->hasMany(ArticleAiDraft::class);
     }
 
     /**

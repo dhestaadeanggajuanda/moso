@@ -4,6 +4,7 @@ use App\Enums\RoleName;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -85,6 +86,56 @@ function fakePrivateDisk(): void
         fn (string $path, DateTimeInterface $expiration, array $options) => 'https://signed.test/'.$path
             .'?disposition='.rawurlencode((string) ($options['ResponseContentDisposition'] ?? '')),
     );
+}
+
+/**
+ * Aktifkan asisten AI dengan host uji dan tolak permintaan yang tidak dipalsukan.
+ */
+function fakeAgenticHost(): void
+{
+    config([
+        'agentic.enabled' => true,
+        'agentic.base_url' => 'https://agentic.test',
+        'agentic.token' => 'token-dinas-uji',
+    ]);
+    Http::preventStrayRequests();
+    Sleep::fake();
+}
+
+/**
+ * Nilai satu field multipart dari permintaan keluar yang direkam Http::fake().
+ */
+function multipartValue(Request $request, string $name): mixed
+{
+    $part = collect($request->data())->firstWhere('name', $name);
+
+    return is_array($part) ? (string) $part['contents'] : null;
+}
+
+/**
+ * Isi `data` dari GET /api/v1/drafts/{id} agentic untuk draf yang sudah selesai.
+ *
+ * @param  array<string, mixed>  $result
+ * @return array<string, mixed>
+ */
+function agenticDoneDraft(string $id, array $result = []): array
+{
+    return [
+        'id' => $id,
+        'status' => 'done',
+        'stage' => null,
+        'error' => null,
+        'result' => [
+            'title_suggestion' => 'Posyandu Balita di Kelurahan Pasiran',
+            'excerpt' => 'Puskesmas menggelar posyandu balita.',
+            'body_html' => '<h2>Kegiatan</h2><p>Posyandu digelar pada <mark>[Perlu dikonfirmasi: tanggal]</mark>.</p>',
+            'image_alt' => 'Petugas menimbang balita',
+            'needs_confirmation' => [['item' => 'tanggal', 'question' => 'Kapan kegiatan berlangsung?']],
+            'category_slugs' => [],
+            'word_count' => 280,
+            ...$result,
+        ],
+    ];
 }
 
 /**

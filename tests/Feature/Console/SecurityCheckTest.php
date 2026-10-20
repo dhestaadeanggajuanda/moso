@@ -76,3 +76,23 @@ it('only warns about debug logging and missing trusted proxies', function () {
         ->expectsOutputToContain('TRUSTED_PROXIES')
         ->assertSuccessful();
 });
+
+it('checks the assistant token and transport only when the assistant is enabled', function (string $url, ?string $token, ?string $hint) {
+    productionReadyConfig();
+    config(['agentic.enabled' => true, 'agentic.base_url' => $url, 'agentic.token' => $token]);
+
+    $command = $this->artisan('security:check');
+
+    if ($hint === null) {
+        $command->assertSuccessful();
+    } else {
+        $command->expectsOutputToContain($hint)->assertFailed();
+    }
+})->with([
+    'https' => ['https://agentic.example.go.id', 'token', null],
+    'http to a private ip' => ['http://172.16.20.30:8080', 'token', null],
+    'http to a docker service name' => ['http://agentic:8080', 'token', null],
+    'http to a public host' => ['http://agentic.example.go.id', 'token', 'AGENTIC_URL=https://'],
+    'http to a public ip' => ['http://203.0.113.10:8080', 'token', 'AGENTIC_URL=https://'],
+    'missing token' => ['https://agentic.example.go.id', null, 'AGENTIC_TOKEN'],
+]);
