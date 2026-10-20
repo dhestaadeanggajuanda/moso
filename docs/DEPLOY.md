@@ -18,6 +18,19 @@ HTTPS diakhiri reverse proxy yang sudah ada di masing-masing server (Nginx, Trae
 
 ## 2. Server Keycloak
 
+`docker/deploy/keycloak` menjalankan satu node Keycloak dengan MySQL di VM yang sama. Susunan ini cocok untuk development atau staging satu dinas. Produksi bersama untuk 40 website dinas memakai cluster di repo `moso-component` (`docs/KEYCLOAK-CLUSTER.md`):
+
+|                   | `docker/deploy/keycloak`                      | Cluster `moso-component`                                                                           |
+| ----------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Pemakaian         | Development atau staging satu dinas           | Produksi bersama 40 dinas                                                                          |
+| Susunan           | 1 node Keycloak + MySQL 8.4 di VM yang sama   | PostgreSQL 17 di VM terpisah + 2 node Keycloak 26.8 di belakang reverse proxy                      |
+| Realm             | `moso`                                        | `pemkot`                                                                                           |
+| Klien             | `moso-portal`, diimpor dari `moso-realm.json` | `moso-<slug>` per dinas, dibuat `keycloak/scripts/create-clients.py`                               |
+| Bukti MFA (`amr`) | Diatur manual (langkah 5)                     | Dipasang skrip: mapper AMR dan referensi AMR di flow browser, sehingga `amr` berisi `otp`          |
+| `.env` aplikasi   | `SSO_ISSUER=KC_HOSTNAME/realms/moso`          | Blok dari `client-secrets.env` skrip (`SSO_ISSUER=.../realms/pemkot`, `SSO_CLIENT_ID=moso-<slug>`) |
+
+Bila memakai cluster, ikuti dokumen di repo itu sebagai ganti langkah di bawah, lalu lanjut ke bagian 4 dengan `SSO_PROVIDER=pemkot`.
+
 1. Siapkan `.env`:
 
     ```bash
@@ -47,11 +60,11 @@ HTTPS diakhiri reverse proxy yang sudah ada di masing-masing server (Nginx, Trae
     ```
 
 4. Login ke console admin (`KC_HOSTNAME/admin`), aktifkan OTP untuk akun admin, lalu buat pengguna pegawai di realm `moso` dengan email yang sama seperti akun portalnya dan centang "Email verified".
-5. Agar MFA di Keycloak menggantikan 2FA aplikasi, wajibkan OTP di realm dan tambahkan mapper "Authentication Method Reference (AMR)" ke client scope klien portal (lihat `docs/SSO-ROADMAP.md`, bagian MFA).
+5. Agar MFA di Keycloak menggantikan 2FA aplikasi, wajibkan OTP di realm, tambahkan mapper "Authentication Method Reference (AMR)" ke client scope klien portal, dan isi nilai referensi AMR di langkah login flow browser (lihat `docs/SSO-ROADMAP.md`, bagian MFA).
 
 ## 3. Server RustFS
 
-Ikuti `docs/STORAGE-S3.md`: bucket `moso-public` (baca anonim) dan `moso-private`, akses lewat HTTPS. Catat endpoint, access key, dan secret key untuk `.env` server aplikasi.
+Ikuti `docs/STORAGE-S3.md`: bucket `moso-public` (baca anonim) dan `moso-private`, akses lewat HTTPS. Produksi bersama memakai bucket `<slug>-public` dan `<slug>-private` serta user `moso-<slug>` per dinas (bagian Produksi). Catat endpoint, access key, dan secret key untuk `.env` server aplikasi.
 
 ## 4. Server aplikasi
 
