@@ -50,3 +50,6 @@ yarn-error.log
 # Hasil build dan cache paket workspace (dibuat ulang oleh npm run build:widget / test:widget)
 /packages/*/dist
 /packages/*/node_modules
+
+# .env dan override per instance dinas di server (docker/deploy/app/instance.sh)
+/docker/deploy/app/instances/

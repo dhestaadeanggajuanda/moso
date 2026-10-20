@@ -5,6 +5,9 @@
 #
 # RustFS (object storage) dan Keycloak (SSO) berjalan di server terpisah; alamatnya diisi di .env.
 # HTTPS diakhiri reverse proxy yang sudah ada di server ini, yang meneruskan ke 127.0.0.1:APP_HTTP_PORT.
+#
+# Beberapa dinas di satu server: pakai docker/deploy/app/instance.sh <slug> (proyek, .env, dan
+# volume terpisah per dinas; image dipakai bersama). Lihat docs/DEPLOY.md.
 
 # Berbeda dari compose pengembangan (docker/compose.yaml, proyek "moso") agar volume tidak tertukar.
 name: moso-app
@@ -18,7 +21,8 @@ x-app-environment: &app-environment
 
 x-app: &app
     image: ${MOSO_APP_IMAGE:-moso-app:latest}
-    env_file: .env
+    # instance.sh mengisi MOSO_ENV_FILE dengan instances/<slug>.env.
+    env_file: ${MOSO_ENV_FILE:-.env}
     environment: *app-environment
     restart: unless-stopped
     depends_on:

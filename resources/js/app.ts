@@ -7,10 +7,19 @@ import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { initializeA11yWidget } from '@/lib/a11yWidget';
 import { initializeFlashToast } from '@/lib/flashToast';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const fallbackAppName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 void createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    // Nama dari APP_NAME instance (prop bersama `name`), bukan dari build,
+    // agar satu image bisa melayani beberapa dinas.
+    title: (title, page) => {
+        const appName =
+            typeof page.props.name === 'string' && page.props.name !== ''
+                ? page.props.name
+                : fallbackAppName;
+
+        return title ? `${title} - ${appName}` : appName;
+    },
     layout: (name) => {
         switch (true) {
             // Situs publik memakai layout dari tema aktif (Themes/{Tema}/Layouts).

@@ -105,7 +105,78 @@ Untuk server development, pakai susunan yang sama dengan perbedaan berikut:
 - Pertahankan `SSO_LOCAL_LOGIN=true` selama uji coba SSO, agar login password tetap bisa dipakai bila SSO bermasalah.
 - Skenario uji SSO ada di `docs/SSO-ROADMAP.md`.
 
-## 6. Container yang berjalan
+## 6. Beberapa dinas di satu server
+
+Satu server aplikasi bisa menjalankan beberapa instance moso, satu per dinas. Setiap instance punya proyek compose `moso-<slug>` sendiri: container, jaringan, MySQL, Redis, dan log terpisah. Image app dan SSR dibangun sekali dan dipakai bersama; nama dinas di judul halaman diambil dari `APP_NAME` masing-masing saat runtime.
+
+```
+pengunjung --HTTPS--> reverse proxy pusat --HTTP:80--> Nginx di host --> 127.0.0.1:8001 (instance moso)
+                                                                     --> 127.0.0.1:8002 (instance dishub)
+```
+
+1. Siapkan `.env` per instance di `docker/deploy/app/instances/` (diabaikan git):
+
+    ```bash
+    mkdir -p docker/deploy/app/instances
+    cp docker/deploy/app/.env.example docker/deploy/app/instances/dishub.env
+    ```
+
+    Selain isian di bagian 4, setiap instance butuh:
+    - `APP_URL` domainnya sendiri dan `APP_HTTP_PORT` yang berbeda (mis. 8001, 8002);
+    - blok `AWS_*` dari `rustfs-secrets.env` dan blok `SSO_*` dari `client-secrets.env` (skrip provisioning `moso-component`), dengan `SSO_PROVIDER=pemkot`;
+    - `TRUSTED_PROXIES` berisi rentang jaringan Docker dan IP reverse proxy pusat: `172.17.0.0/16,172.18.0.0/15,172.20.0.0/14,172.24.0.0/13,<IP proxy pusat>`. Rentang itu sengaja tidak mencakup `172.16.0.0/16`, agar perangkat lain di LAN tidak ikut dipercaya.
+
+2. Semua perintah compose lewat `instance.sh <slug>`, yang memilih proyek, `.env`, dan override instance itu:
+
+    ```bash
+    sh docker/deploy/app/instance.sh dishub build
+    sh docker/deploy/app/instance.sh dishub run --rm --no-deps --entrypoint php app artisan key:generate --show
+    sh docker/deploy/app/instance.sh dishub up -d
+    sh docker/deploy/app/instance.sh dishub exec app php artisan db:seed --force
+    ```
+
+    `build` cukup sekali untuk semua instance (image `moso-app:latest` dan `moso-ssr:latest`). Tema yang dikompilasi (`VITE_THEMES`) ikut image; dinas dengan tema berbeda butuh image sendiri lewat `MOSO_APP_IMAGE` dan `MOSO_SSR_IMAGE` di `.env`-nya.
+
+3. Pasang Nginx di host sebagai penerus dari proxy pusat. Contoh lengkap: `docker/deploy/app/nginx-host.conf` (satu blok `server` per domain, host lain ditolak). Di AlmaLinux 9:
+
+    ```bash
+    dnf -y install nginx
+    cp docker/deploy/app/nginx-host.conf /etc/nginx/conf.d/moso.conf
+    setsebool -P httpd_can_network_connect 1
+    nginx -t && systemctl enable --now nginx
+    ```
+
+    `httpd_can_network_connect` mengizinkan Nginx (SELinux) meneruskan ke port container. Buka port 80 hanya untuk proxy pusat:
+
+    ```bash
+    firewall-cmd --permanent --add-rich-rule='rule family=ipv4 source address=<IP proxy pusat>/32 port port=80 protocol=tcp accept'
+    firewall-cmd --reload
+    ```
+
+4. Di reverse proxy pusat, arahkan setiap domain ke `http://<IP server aplikasi>:80`, dengan header `Host` asli dan `X-Forwarded-For`, `X-Forwarded-Proto: https`.
+5. Server aplikasi harus menjangkau `https://sso.<domain>` dan `https://s3.<domain>` lewat proxy pusat (split DNS atau hairpin NAT), karena URL yang sama dipakai browser. Container tidak membaca `/etc/hosts` host. Bila DNS internal belum ada, buat `docker/deploy/app/instances/<slug>.override.yaml`:
+
+    ```yaml
+    x-hosts: &hosts
+        extra_hosts:
+            - 'sso.singkawangkota.go.id:<IP proxy pusat>'
+            - 's3.singkawangkota.go.id:<IP proxy pusat>'
+
+    services:
+        app: *hosts
+        worker: *hosts
+        scheduler: *hosts
+    ```
+
+    Periksa dari dalam container:
+
+    ```bash
+    sh docker/deploy/app/instance.sh dishub exec app php -r 'echo file_get_contents("https://sso.singkawangkota.go.id/realms/pemkot/.well-known/openid-configuration") ? "SSO OK\n" : "SSO gagal\n";'
+    ```
+
+Setiap instance memakai MySQL dan Redis sendiri. Siapkan sekitar 1,5 sampai 2 GB RAM per instance.
+
+## 7. Container yang berjalan
 
 | Service     | Tugas                                                                                                        |
 | ----------- | ------------------------------------------------------------------------------------------------------------ |
@@ -118,7 +189,7 @@ Untuk server development, pakai susunan yang sama dengan perbedaan berikut:
 
 Container `app`, `worker`, dan `scheduler` memakai image yang sama dan berjalan sebagai `www-data`. Saat start, entrypoint membuat cache konfigurasi, route, view, dan event dari `.env`.
 
-## 7. Memperbarui versi
+## 8. Memperbarui versi
 
 ```bash
 git pull
@@ -128,11 +199,13 @@ git pull
 docker compose -f docker/deploy/app/compose.yaml up -d --build
 ```
 
+Untuk beberapa instance: `git pull`, sekali `sh docker/deploy/app/instance.sh <slug> build`, lalu `sh docker/deploy/app/instance.sh <slug> up -d` untuk setiap instance.
+
 Image baru dibangun, migrasi berjalan saat `app` start, dan worker Octane memuat kode baru karena container dibuat ulang. Setelah mengubah `.env`, cukup `up -d` (tanpa `--build`) agar container dibuat ulang dengan nilai baru.
 
 Untuk rollback, beri tag image sebelum memperbarui (`MOSO_APP_IMAGE` dan `MOSO_SSR_IMAGE` di `.env`), lalu kembalikan tag-nya. Migrasi yang sudah berjalan tidak ikut dibatalkan.
 
-## 8. Cadangan dan log
+## 9. Cadangan dan log
 
 - Database aplikasi:
 
@@ -144,7 +217,7 @@ Untuk rollback, beri tag image sebelum memperbarui (`MOSO_APP_IMAGE` dan `MOSO_S
 - Log audit keamanan (`audit-*.log`, disimpan 365 hari) ada di volume `storage-logs`. Log aplikasi lain ke `docker compose logs`.
 - Berkas unggahan ada di RustFS; cadangkan di server RustFS.
 
-## 9. Catatan keamanan
+## 10. Catatan keamanan
 
 - Jangan pernah commit `docker/deploy/*/.env`. Keduanya sudah diabaikan git.
 - Port `app` (8000) dan Keycloak (8080) hanya terikat ke `127.0.0.1`; akses publik hanya lewat reverse proxy HTTPS.
