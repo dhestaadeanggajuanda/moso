@@ -3,6 +3,19 @@ export type Option<T = string> = {
     label: string;
 };
 
+/** Peran akun (RoleName::options()); label sama dengan nilai. */
+export type RoleOption = Option & {
+    description: string;
+};
+
+/** Identitas SSO yang tertaut ke akun pegawai. */
+export type SsoIdentityRow = {
+    id: number;
+    provider: string;
+    last_login_at: string | null;
+    created_at: string | null;
+};
+
 export type StatusValue = {
     value: string;
     label: string;

@@ -63,7 +63,8 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            // Eloquent tanpa akun nonaktif (AppServiceProvider::configureAuthentication()).
+            'driver' => 'active-users',
             'model' => env('AUTH_MODEL', User::class),
         ],
 

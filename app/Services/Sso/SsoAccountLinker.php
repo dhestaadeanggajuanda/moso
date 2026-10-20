@@ -31,6 +31,10 @@ class SsoAccountLinker
             ->first();
 
         if ($linked !== null) {
+            if ($linked->user->isDeactivated()) {
+                throw SsoAuthenticationFailed::because('account_deactivated');
+            }
+
             return $linked;
         }
 
@@ -46,6 +50,10 @@ class SsoAccountLinker
 
         if ($user === null) {
             throw SsoAuthenticationFailed::because('not_registered');
+        }
+
+        if ($user->isDeactivated()) {
+            throw SsoAuthenticationFailed::because('account_deactivated');
         }
 
         // Akun sudah tertaut ke subject lain (mis. email dipakai ulang di IdP): jangan diambil alih.

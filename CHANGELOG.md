@@ -4,6 +4,21 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Halaman admin "Pengguna" (`/admin/users`, Super Admin) untuk mengelola akun pegawai, karena registrasi publik mati dan login SSO tidak pernah membuat akun:
+    - Daftar akun dengan pencarian nama/email, saringan peran dan status, serta penanda tertaut SSO dan 2FA.
+    - Tambah akun (nama, email, peran) dengan akses awal: tautan atur kata sandi lewat email (`AccountCreated`, berlaku sesuai `auth.passwords.users.expire`), kata sandi awal, atau tanpa kata sandi (masuk lewat SSO, hanya bila SSO aktif). Akun yang dibuat Super Admin langsung berstatus email terverifikasi.
+    - Ubah nama, email, dan peran; nonaktifkan atau aktifkan kembali akun; lihat dan lepas tautan SSO.
+    - Menu "Pengguna" di sidebar (`auth.can.users`).
+- Kolom `users.deactivated_at`. Akun dinonaktifkan, tidak dihapus, sehingga artikel dan jejak audit tetap menunjuk ke penulisnya.
+
+### Keamanan
+
+- Akun nonaktif tidak bisa masuk lewat kata sandi, "ingat saya", passkey, maupun SSO, sesinya berakhir pada permintaan berikutnya, dan tautan reset kata sandi tidak dikirim (driver user provider `active-users` di `config/auth.php`). Login kata sandi tetap menjawab dengan pesan umum.
+- `UserPolicy`: hanya Super Admin yang mengelola akun. Bila `users.manage` kelak diberikan ke role lain, pemegangnya tetap tidak bisa mengubah akun Super Admin atau memberi peran Super Admin. Super Admin tidak bisa mengubah perannya sendiri atau menonaktifkan akunnya sendiri.
+- Log audit `user.created`, `user.updated` (hanya nama kolom), `user.deactivated`, `user.activated`, dan `sso.unlinked`, masing-masing dengan `actor_id`. Kata sandi tidak pernah dikirim ke browser, lewat email, atau ke log.
+
 ## [3.7.0] - 2026-10-19
 
 Deploy dengan Docker: Laravel Octane di FrankenPHP (PHP 8.5) untuk server aplikasi, dan Keycloak di server terpisah.

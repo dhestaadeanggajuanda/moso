@@ -11,6 +11,7 @@ use App\Models\Page;
 use App\Models\PublicDocument;
 use App\Models\Service;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -76,6 +77,7 @@ class HandleInertiaRequests extends Middleware
                     'sakip' => $user->can('viewAny', ESakip::class),
                     'menus' => $user->can('viewAny', Menu::class),
                     'settings' => $user->can('viewAny', Setting::class),
+                    'users' => $user->can('viewAny', User::class),
                 ] : (object) [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

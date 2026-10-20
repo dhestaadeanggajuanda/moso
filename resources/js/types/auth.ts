@@ -23,6 +23,8 @@ export type AdminAbilities = {
     sakip: boolean;
     menus: boolean;
     settings: boolean;
+    /** Manajemen akun pegawai: hanya Super Admin. */
+    users: boolean;
 };
 
 export type Auth = {

@@ -7,6 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -27,6 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
+ * @property Carbon|null $deactivated_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -59,6 +62,31 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     }
 
     /**
+     * Akun nonaktif tidak bisa login lewat cara apa pun dan sesinya berakhir
+     * (lihat AppServiceProvider::configureAuthentication()).
+     */
+    public function isDeactivated(): bool
+    {
+        return $this->deactivated_at !== null;
+    }
+
+    /**
+     * Cari nama atau email secara harfiah: % dan _ dari pengguna bukan wildcard.
+     * Karakter escape "!" eksplisit supaya perilakunya sama di MySQL dan SQLite.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function searchNameOrEmail(Builder $query, string $term): void
+    {
+        $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term).'%';
+
+        $query->where(fn (Builder $query) => $query
+            ->whereRaw("name LIKE ? ESCAPE '!'", [$pattern])
+            ->orWhereRaw("email LIKE ? ESCAPE '!'", [$pattern]));
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -69,6 +97,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
+            'deactivated_at' => 'datetime',
         ];
     }
 }

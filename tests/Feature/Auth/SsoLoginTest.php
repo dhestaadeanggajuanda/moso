@@ -198,6 +198,21 @@ describe('callback', function () {
         $this->assertGuest();
     });
 
+    it('refuses a deactivated account whether already linked or linked by email', function (bool $alreadyLinked) {
+        $user = User::factory()->deactivated()->create(['email' => 'pegawai@dinas.test']);
+
+        if ($alreadyLinked) {
+            SsoIdentity::factory()->for($user)->create(['subject' => 'subjek-123']);
+        }
+
+        ssoCallback($this)
+            ->assertRedirect(route('login'))
+            ->assertSessionHasErrors(['sso' => 'Akun portal Anda dinonaktifkan. Hubungi admin dinas.']);
+
+        $this->assertGuest();
+        expect(SsoIdentity::count())->toBe($alreadyLinked ? 1 : 0);
+    })->with(['already linked' => [true], 'not linked yet' => [false]]);
+
     it('rejects a callback whose state does not match the session', function () {
         SsoIdentity::factory()->create(['subject' => 'subjek-123']);
 

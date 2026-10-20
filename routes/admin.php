@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\SakipController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SiteLogoController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Middleware\EnsureTwoFactorForPrivilegedRoles;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,14 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
         Route::resource('sakip', SakipController::class)->except('show');
         Route::get('sakip/{sakip}/file', [SakipController::class, 'file'])->name('sakip.file');
         Route::resource('menus', MenuController::class)->except('show');
+
+        // Manajemen akun pegawai (Super Admin). Akun dinonaktifkan, tidak dihapus.
+        Route::resource('users', UserController::class)->except(['show', 'destroy']);
+        Route::post('users/{user}/deactivate', [UserController::class, 'deactivate'])->name('users.deactivate');
+        Route::post('users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
+        Route::delete('users/{user}/sso-identities/{ssoIdentity}', [UserController::class, 'unlinkSso'])
+            ->scopeBindings()
+            ->name('users.sso-identities.destroy');
 
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');

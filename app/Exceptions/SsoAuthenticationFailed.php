@@ -29,6 +29,7 @@ class SsoAuthenticationFailed extends RuntimeException
     {
         return match ($this->reason) {
             'not_registered', 'email_unverified' => 'Akun SSO Anda belum terdaftar di portal ini. Hubungi admin dinas.',
+            'account_deactivated' => 'Akun portal Anda dinonaktifkan. Hubungi admin dinas.',
             'already_linked' => 'Akun portal dengan email ini sudah tertaut ke akun SSO lain. Hubungi admin dinas.',
             'access_denied' => 'Login SSO dibatalkan.',
             default => 'Login SSO gagal. Coba lagi, atau hubungi admin bila masalah berlanjut.',

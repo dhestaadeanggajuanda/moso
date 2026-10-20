@@ -12,6 +12,7 @@ import {
     Newspaper,
     Settings2,
     Tags,
+    UsersRound,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import AgendaController from '@/actions/App/Http/Controllers/Admin/AgendaController';
@@ -23,6 +24,7 @@ import PublicDocumentController from '@/actions/App/Http/Controllers/Admin/Publi
 import SakipController from '@/actions/App/Http/Controllers/Admin/SakipController';
 import ServiceController from '@/actions/App/Http/Controllers/Admin/ServiceController';
 import SettingController from '@/actions/App/Http/Controllers/Admin/SettingController';
+import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
 import AppLogo from '@/components/AppLogo.vue';
 import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
@@ -98,6 +100,14 @@ const mainNavItems = computed<NavItem[]>(() => {
         [
             can.menus,
             { title: 'Menu', href: MenuController.index(), icon: ListTree },
+        ],
+        [
+            can.users,
+            {
+                title: 'Pengguna',
+                href: UserController.index(),
+                icon: UsersRound,
+            },
         ],
         [
             can.settings,
