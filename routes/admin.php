@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\AgendaController;
+use App\Http\Controllers\Admin\ArticleAiDraftController;
 use App\Http\Controllers\Admin\ArticleCommentController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\ArticleWorkflowController;
+use App\Http\Controllers\Admin\AssistantController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PageBuilderController;
@@ -25,6 +27,17 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        // Asisten AI (moso-agentic). Didaftarkan sebelum resource agar tidak tertangkap articles/{article}.
+        // Prefix throttle terpisah: tanpa prefix, semua throttle:x,y berbagi satu hitungan per pengguna,
+        // dan polling status (tiap 2 detik) akan menghabiskan jatah permintaan draf.
+        Route::post('articles/ai-drafts', [ArticleAiDraftController::class, 'store'])
+            ->middleware('throttle:10,1,ai-drafts')
+            ->name('articles.ai-drafts.store');
+        Route::get('articles/ai-drafts/{aiDraft}', [ArticleAiDraftController::class, 'show'])
+            ->whereUuid('aiDraft')
+            ->middleware('throttle:60,1,ai-draft-status')
+            ->name('articles.ai-drafts.show');
+
         Route::resource('articles', ArticleController::class);
         // Alur persetujuan (Fase 5): status hanya berubah lewat endpoint ini.
         Route::post('articles/{article}/transitions', [ArticleWorkflowController::class, 'store'])
@@ -66,4 +79,12 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
             ->middleware('throttle:20,1')
             ->name('settings.logos.update');
         Route::delete('settings/logos/{logo}', [SiteLogoController::class, 'destroy'])->name('settings.logos.destroy');
+
+        // Asisten AI: profil dinas dan gaya tulisan disimpan di moso-agentic (Super Admin).
+        Route::get('assistant', [AssistantController::class, 'index'])->name('assistant.index');
+        Route::middleware('throttle:20,1,assistant')->group(function () {
+            Route::put('assistant/profile', [AssistantController::class, 'updateProfile'])->name('assistant.profile.update');
+            Route::put('assistant/style-notes', [AssistantController::class, 'updateStyleNotes'])->name('assistant.style-notes.update');
+            Route::delete('assistant/style-notes', [AssistantController::class, 'resetStyleNotes'])->name('assistant.style-notes.destroy');
+        });
     });

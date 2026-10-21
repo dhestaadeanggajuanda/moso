@@ -11,12 +11,14 @@ import {
     ListTree,
     Newspaper,
     Settings2,
+    Sparkles,
     Tags,
     UsersRound,
 } from '@lucide/vue';
 import { computed } from 'vue';
 import AgendaController from '@/actions/App/Http/Controllers/Admin/AgendaController';
 import ArticleController from '@/actions/App/Http/Controllers/Admin/ArticleController';
+import AssistantController from '@/actions/App/Http/Controllers/Admin/AssistantController';
 import CategoryController from '@/actions/App/Http/Controllers/Admin/CategoryController';
 import MenuController from '@/actions/App/Http/Controllers/Admin/MenuController';
 import PageController from '@/actions/App/Http/Controllers/Admin/PageController';
@@ -115,6 +117,14 @@ const mainNavItems = computed<NavItem[]>(() => {
                 title: 'Pengaturan situs',
                 href: SettingController.index(),
                 icon: Settings2,
+            },
+        ],
+        [
+            can.assistant,
+            {
+                title: 'Asisten AI',
+                href: AssistantController.index(),
+                icon: Sparkles,
             },
         ],
     ];

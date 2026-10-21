@@ -19,6 +19,32 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 - `UserPolicy`: hanya Super Admin yang mengelola akun. Bila `users.manage` kelak diberikan ke role lain, pemegangnya tetap tidak bisa mengubah akun Super Admin atau memberi peran Super Admin. Super Admin tidak bisa mengubah perannya sendiri atau menonaktifkan akunnya sendiri.
 - Log audit `user.created`, `user.updated` (hanya nama kolom), `user.deactivated`, `user.activated`, dan `sso.unlinked`, masing-masing dengan `actor_id`. Kata sandi tidak pernah dikirim ke browser, lewat email, atau ke log.
 
+## [3.8.0] - 2026-10-20
+
+Asisten penulis berita: draf berita atau liputan kegiatan disusun oleh layanan pusat moso-agentic dari judul, foto, dan deskripsi pendek. Fitur ini mati sampai `AGENTIC_ENABLED=true`.
+
+### Ditambahkan
+
+- Tombol "Tulis dengan AI" di form artikel (`resources/js/Admin/AiDraft/AiDraftDialog.vue`):
+    - Memakai bahan dari form (judul, ringkasan, foto yang dipilih atau gambar utama yang tersimpan) ditambah info tambahan opsional, untuk jenis "Berita atau pengumuman" atau "Liputan kegiatan".
+    - Draf disusun asinkron di agentic. Browser menanyakan status tiap 2 detik dan menampilkan tahapnya ("Membaca foto…", "Mengingat berita sebelumnya…", "Menulis draf…", "Memeriksa fakta…").
+    - Pratinjau hasil beserta daftar "Perlu dikonfirmasi". "Pakai draf ini" mengisi isi artikel, juga ringkasan, teks alternatif gambar, dan kategori bila masih kosong; isian yang sudah ada hanya ditimpa setelah dikonfirmasi. "Tulis ulang" menerima instruksi perbaikan.
+    - Route `admin.articles.ai-drafts.store` (10 per menit) dan `admin.articles.ai-drafts.show` (60 per menit, untuk polling), tabel `article_ai_drafts`. Draf yang dipakai ditautkan ke artikel saat disimpan.
+- Halaman admin "Asisten AI" (`/admin/assistant`, Super Admin) dengan tab Profil dinas (nama resmi, tugas, pejabat, program, kontak), Gaya tulisan (aturan hasil belajar yang bisa diubah, dikunci, atau direset), dan Status (koneksi, berita terindeks, draf 30 hari).
+- Memori berita terbit: artikel yang diterbitkan, diubah saat terbit, diarsipkan, atau dihapus disalin ke agentic lewat antrean (event `ArticlePublished`/`ArticleUnpublished`, listener `SyncArticleToAgentic`). Perintah `php artisan agentic:sync-articles {--since=}` mengisi memori dari berita lama.
+- Konfigurasi `config/agentic.php` dengan variabel `AGENTIC_ENABLED`, `AGENTIC_URL`, dan `AGENTIC_TOKEN`. Klien `App\Services\Agentic\AgenticClient` hanya memakai Http facade, tanpa dependensi baru.
+
+### Diubah
+
+- Artikel yang isinya masih memuat penanda "[Perlu dikonfirmasi: …]" tidak bisa diajukan atau diterbitkan. Form artikel menampilkan peringatan selama penanda itu ada.
+- Isi, ringkasan, teks alternatif, judul, dan kategori di form artikel kini terkontrol (v-model) dan tetap terkirim lewat `<Form>` seperti sebelumnya.
+
+### Keamanan
+
+- Permintaan ke agentic hanya ke `AGENTIC_URL`, tanpa mengikuti redirect, dengan token per dinas. Foto dikirim sebagai byte (dibaca dari disk `s3` bila tidak ada unggahan baru), tidak pernah sebagai URL. Kegagalan tidak pernah memutus halaman, dan log hanya mencatat operasi dan status tanpa isi konten.
+- HTML draf disanitasi ulang dengan `HtmlSanitizer` sebelum dikirim ke browser. Draf hanya bisa dibaca pemiliknya (404 untuk pengguna lain), penulis dikirim ke agentic sebagai HMAC ID, dan draf hanya ditautkan ke artikel bila milik pengguna yang sama.
+- `php artisan security:check` memeriksa token agentic dan memastikan `AGENTIC_URL` memakai HTTPS kecuali mengarah ke jaringan privat.
+
 ## [3.7.0] - 2026-10-19
 
 Deploy dengan Docker: Laravel Octane di FrankenPHP (PHP 8.5) untuk server aplikasi, dan Keycloak di server terpisah.
@@ -228,7 +254,8 @@ Rilis pertama CMS Portal Berita Pemerintah berbasis Laravel 13 + Vue 3 (Fase 0 d
 - Nilai pengaturan rahasia disimpan terenkripsi dan tidak pernah dikirim ke browser. Session terenkripsi.
 - Advisory npm tinypool (GHSA-5gmw-xhrv-c9v3) ditutup lewat `overrides`.
 
-[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.7.0...HEAD
+[Unreleased]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.8.0...HEAD
+[3.8.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.7.0...v3.8.0
 [3.7.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.5.0...v3.6.0
 [3.5.0]: https://github.com/dhestaadeanggajuanda/moso/compare/v3.4.0...v3.5.0

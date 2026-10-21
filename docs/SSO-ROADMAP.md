@@ -46,7 +46,20 @@ Bila ID token membuktikan MFA di IdP, 2FA aplikasi tidak diminta lagi untuk sesi
 - `amr` yang memuat salah satu nilai `SSO_MFA_AMR` (bawaan: `mfa,otp,hwk,swk,sms,face,fpt`), atau
 - `acr` yang sama dengan salah satu nilai `SSO_MFA_ACR` (kosong secara bawaan).
 
-Pastikan IdP benar-benar mengirim klaim ini hanya bila MFA terjadi. Di Keycloak, tambahkan mapper "Authentication Method Reference (AMR)" ke client scope klien portal, atau pakai alur step-up dengan nilai `acr` tertentu.
+Pastikan IdP benar-benar mengirim klaim ini hanya bila MFA terjadi. Di Keycloak, pakai alur step-up dengan nilai `acr` tertentu, atau `amr` dengan dua pengaturan berikut:
+
+1. Mapper "Authentication Method Reference (AMR)" di client scope klien portal.
+2. Nilai referensi di setiap langkah login flow browser (Authentication → flow `browser` → ikon gerigi pada langkah itu → `default.reference.value`).
+
+**Mapper saja tidak cukup.** Mapper hanya menyalin nilai referensi dari langkah login yang dilalui. Tanpa referensi, `amr` selalu kosong dan login ber-OTP tidak dikenali sebagai MFA. Ini terbukti saat uji lokal pada 19 Oktober 2026.
+
+| Langkah login (provider)                               | `default.reference.value` |
+| ------------------------------------------------------ | ------------------------- |
+| Username Password Form (`auth-username-password-form`) | `pwd`                     |
+| OTP Form (`auth-otp-form`)                             | `otp`                     |
+| WebAuthn Authenticator (`webauthn-authenticator`)      | `hwk`                     |
+
+Dengan pengaturan ini, login dengan OTP menghasilkan `amr: ["pwd","otp"]`, sedangkan login password saja menghasilkan `amr: ["pwd"]` dan tidak dianggap MFA. Di cluster produksi (repo `moso-component`), `keycloak/scripts/create-clients.py` memasang mapper dan nilai referensi ini sekaligus.
 
 ## Logout
 
@@ -83,7 +96,7 @@ Sesudah deploy, `php artisan security:check` ikut memeriksa issuer HTTPS dan kre
 3. Di console admin, realm `moso` → Users → buat pengguna dengan email yang sama dengan akun portal yang sudah ada, centang "Email verified", lalu atur kata sandinya.
 4. Buka `/login`, klik "Masuk dengan SSO". Login pertama menautkan akun; login berikutnya memakai `sub`.
 
-Untuk server development dan produksi, pakai `docker/deploy/keycloak` (mode produksi dengan MySQL, lihat `docs/DEPLOY.md`); realm yang sama diimpor dengan `MOSO_APP_URL` sebagai URL portal.
+Untuk server development atau staging satu dinas, pakai `docker/deploy/keycloak` (mode produksi dengan MySQL, lihat `docs/DEPLOY.md`); realm yang sama diimpor dengan `MOSO_APP_URL` sebagai URL portal. Produksi bersama 40 dinas memakai cluster Keycloak di repo `moso-component` (realm `pemkot`, lihat `docs/DEPLOY.md` bagian 2).
 
 Data Keycloak lokal tidak disimpan di volume: membuat ulang container menghapus pengguna uji, dan subject baru tidak bisa mengambil alih akun yang sudah tertaut (hapus baris `sso_identities` lama bila perlu).
 

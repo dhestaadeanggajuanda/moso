@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { TriangleAlert } from '@lucide/vue';
+import { computed, ref, watch } from 'vue';
 import ArticleController from '@/actions/App/Http/Controllers/Admin/ArticleController';
+import AiDraftDialog from '@/Admin/AiDraft/AiDraftDialog.vue';
 import ActionButtons from '@/Admin/Workflow/ActionButtons.vue';
 import ConfirmDelete from '@/components/admin/ConfirmDelete.vue';
 import PageHeader from '@/components/admin/PageHeader.vue';
@@ -14,6 +16,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { formatDateTime } from '@/lib/format';
 import type {
+    AiDraftApplication,
+    AiDraftOptions,
     CategoryOption,
     StatusValue,
     WorkflowAction,
@@ -43,6 +47,7 @@ type ArticleForm = {
 const props = defineProps<{
     article: ArticleForm | null;
     categories: CategoryOption[];
+    ai: AiDraftOptions;
 }>();
 
 defineOptions({
@@ -59,12 +64,67 @@ const formAction = computed(() =>
 );
 const removeImage = ref(false);
 
-// Input memakai default-value (tidak terkontrol). Setelah simpan, Inertia memakai ulang
-// komponen ini, jadi form dipasang ulang agar menampilkan nilai versi server
+// Sebagian besar input memakai default-value (tidak terkontrol). Setelah simpan, Inertia
+// memakai ulang komponen ini, jadi form dipasang ulang agar menampilkan nilai versi server
 // (body tersanitasi, slug yang dibuat otomatis).
 const formKey = computed(() =>
     props.article ? `${props.article.id}-${props.article.updated_at}` : 'new',
 );
+
+// Isian yang bisa diisi asisten AI memakai v-model, tetapi tetap ber-`name`
+// sehingga <Form> membaca nilainya seperti input biasa.
+const title = ref('');
+const excerpt = ref('');
+const body = ref('');
+const imageAlt = ref('');
+const selectedCategoryIds = ref<number[]>([]);
+const imageFile = ref<File | null>(null);
+const aiDraftId = ref<string | null>(null);
+
+watch(
+    formKey,
+    () => {
+        title.value = props.article?.title ?? '';
+        excerpt.value = props.article?.excerpt ?? '';
+        body.value = props.article?.body ?? '';
+        imageAlt.value = props.article?.image_alt ?? '';
+        selectedCategoryIds.value = [...(props.article?.category_ids ?? [])];
+        imageFile.value = null;
+        aiDraftId.value = null;
+    },
+    { immediate: true },
+);
+
+/** Penanda data belum pasti dari draf AI; server menolak pengajuan selama masih ada. */
+const hasUnconfirmedPlaceholder = computed(() =>
+    /\[perlu dikonfirmasi:/i.test(body.value),
+);
+
+function onImageChange(event: Event): void {
+    imageFile.value = (event.target as HTMLInputElement).files?.[0] ?? null;
+}
+
+function applyAiDraft(application: AiDraftApplication): void {
+    body.value = application.body;
+
+    if (application.excerpt !== undefined) {
+        excerpt.value = application.excerpt;
+    }
+
+    if (application.imageAlt !== undefined) {
+        imageAlt.value = application.imageAlt;
+    }
+
+    if (application.title !== undefined) {
+        title.value = application.title;
+    }
+
+    if (application.categoryIds.length > 0) {
+        selectedCategoryIds.value = [...application.categoryIds];
+    }
+
+    aiDraftId.value = application.draftId;
+}
 </script>
 
 <template>
@@ -111,12 +171,19 @@ const formKey = computed(() =>
             v-slot="{ errors, processing, progress }"
         >
             <div class="grid content-start gap-5">
+                <!-- Draf AI yang dipakai; ditautkan ke artikel hanya bila milik pengguna yang sama (dicek server). -->
+                <input
+                    type="hidden"
+                    name="ai_draft_id"
+                    :value="aiDraftId ?? ''"
+                />
+
                 <div class="grid gap-1.5">
                     <Label for="title">Judul</Label>
                     <Input
                         id="title"
+                        v-model="title"
                         name="title"
-                        :default-value="article?.title"
                         required
                         maxlength="255"
                         :aria-invalid="!!errors.title"
@@ -128,24 +195,59 @@ const formKey = computed(() =>
                     <Label for="excerpt">Ringkasan</Label>
                     <Textarea
                         id="excerpt"
+                        v-model="excerpt"
                         name="excerpt"
                         rows="2"
                         maxlength="500"
-                        :default-value="article?.excerpt ?? ''"
                         :aria-invalid="!!errors.excerpt"
                     />
                     <InputError :message="errors.excerpt" />
                 </div>
 
                 <div class="grid gap-1.5">
-                    <Label for="body">Isi artikel</Label>
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-2"
+                    >
+                        <Label for="body">Isi artikel</Label>
+                        <AiDraftDialog
+                            v-if="ai.enabled"
+                            :article-id="article?.id ?? null"
+                            :title="title"
+                            :description="excerpt"
+                            :image-file="imageFile"
+                            :existing-image-url="
+                                article?.image_url && !removeImage
+                                    ? article.image_url
+                                    : null
+                            "
+                            :kinds="ai.kinds"
+                            :current="{
+                                body,
+                                excerpt,
+                                imageAlt,
+                                hasCategories: selectedCategoryIds.length > 0,
+                            }"
+                            @apply="applyAiDraft"
+                        />
+                    </div>
+                    <Alert v-if="hasUnconfirmedPlaceholder">
+                        <TriangleAlert aria-hidden="true" />
+                        <AlertTitle
+                            >Masih ada bagian "Perlu dikonfirmasi"</AlertTitle
+                        >
+                        <AlertDescription>
+                            Lengkapi data yang ditandai, lalu hapus penandanya.
+                            Artikel belum bisa diajukan atau diterbitkan selama
+                            penanda itu masih ada.
+                        </AlertDescription>
+                    </Alert>
                     <Textarea
                         id="body"
+                        v-model="body"
                         name="body"
                         rows="16"
                         required
                         class="font-mono text-sm"
-                        :default-value="article?.body ?? ''"
                         aria-describedby="body-help"
                         :aria-invalid="!!errors.body"
                     />
@@ -185,12 +287,10 @@ const formKey = computed(() =>
                         class="flex min-h-6 items-center gap-2 text-sm"
                     >
                         <input
+                            v-model="selectedCategoryIds"
                             type="checkbox"
                             name="category_ids[]"
                             :value="category.id"
-                            :checked="
-                                article?.category_ids.includes(category.id)
-                            "
                             class="size-4 rounded border-input accent-primary"
                         />
                         {{ category.name }}
@@ -212,6 +312,7 @@ const formKey = computed(() =>
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
                         aria-describedby="image-help"
+                        @change="onImageChange"
                         class="text-sm file:mr-3 file:rounded-md file:border file:bg-transparent file:px-3 file:py-1.5 file:text-sm"
                     />
                     <p id="image-help" class="text-xs text-muted-foreground">
@@ -246,8 +347,8 @@ const formKey = computed(() =>
                     <Label for="image_alt">Teks alternatif gambar</Label>
                     <Input
                         id="image_alt"
+                        v-model="imageAlt"
                         name="image_alt"
-                        :default-value="article?.image_alt ?? ''"
                         aria-describedby="image-alt-help"
                         :aria-invalid="!!errors.image_alt"
                     />

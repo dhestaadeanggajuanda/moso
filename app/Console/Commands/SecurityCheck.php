@@ -73,7 +73,51 @@ class SecurityCheck extends Command
             $this->check('Log tidak di level debug', $logLevel !== 'debug', false, 'LOG_LEVEL=warning atau error'),
             $this->check('Proxy tepercaya diatur', filled(config('trustedproxy.proxies')), false, 'TRUSTED_PROXIES, abaikan bila tanpa reverse proxy'),
             ...$this->ssoChecks(),
+            ...$this->agenticChecks(),
         ];
+    }
+
+    /**
+     * Pemeriksaan asisten AI (moso-agentic), hanya bila AGENTIC_ENABLED=true.
+     *
+     * Token dinas dikirim di setiap permintaan, jadi koneksi wajib HTTPS kecuali
+     * service berada di jaringan privat yang sama (IP privat atau nama container).
+     *
+     * @return list<array{label: string, passed: bool, required: bool, hint: string}>
+     */
+    private function agenticChecks(): array
+    {
+        if (! config('agentic.enabled')) {
+            return [];
+        }
+
+        $url = (string) config('agentic.base_url');
+        $secureTransport = str_starts_with($url, 'https://')
+            || (str_starts_with($url, 'http://') && $this->isPrivateNetworkHost(parse_url($url, PHP_URL_HOST)));
+
+        return [
+            $this->check('Asisten AI: token terisi', filled(config('agentic.token')), true, 'AGENTIC_TOKEN dari tenant:create di server agentic'),
+            $this->check('Asisten AI: HTTPS atau jaringan privat', $secureTransport, true, 'AGENTIC_URL=https://..., atau http:// hanya ke IP privat'),
+        ];
+    }
+
+    /**
+     * IP privat/khusus (10.x, 172.16-31.x, 192.168.x, loopback) atau nama host
+     * satu label seperti nama service Docker ("agentic").
+     */
+    private function isPrivateNetworkHost(mixed $host): bool
+    {
+        if (! is_string($host) || $host === '') {
+            return false;
+        }
+
+        $host = trim($host, '[]');
+
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+        }
+
+        return $host === 'localhost' || ! str_contains($host, '.');
     }
 
     /**

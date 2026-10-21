@@ -45,6 +45,8 @@ class ArticleRequest extends FormRequest
             ],
             'category_ids' => ['array'],
             'category_ids.*' => ['integer', Rule::exists('categories', 'id')],
+            // Draf asisten AI yang dipakai; kepemilikannya dicek saat ditautkan (ArticleController).
+            'ai_draft_id' => ['nullable', 'uuid'],
         ];
     }
 

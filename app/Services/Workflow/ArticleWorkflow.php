@@ -4,10 +4,14 @@ namespace App\Services\Workflow;
 
 use App\Enums\ArticleAction;
 use App\Enums\ArticleCommentType;
+use App\Enums\ArticleStatus;
+use App\Events\ArticlePublished;
+use App\Events\ArticleUnpublished;
 use App\Exceptions\InvalidArticleTransition;
 use App\Models\Article;
 use App\Models\ArticleComment;
 use App\Models\User;
+use App\Services\Agentic\PlaceholderGuard;
 use App\Support\AuditLog;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +57,11 @@ class ArticleWorkflow
                 throw InvalidArticleTransition::for($action, $from);
             }
 
+            // Penanda data belum pasti dari draf asisten AI tidak boleh sampai ke reviewer atau situs.
+            if (in_array($action, [ArticleAction::Submit, ArticleAction::Publish], true) && PlaceholderGuard::has($locked->body)) {
+                throw InvalidArticleTransition::unconfirmedPlaceholders();
+            }
+
             $locked->status = $action->to();
 
             if ($action === ArticleAction::Publish) {
@@ -82,6 +91,13 @@ class ArticleWorkflow
             ]));
 
             $article->setRawAttributes($locked->getAttributes(), true);
+
+            // Dikirim setelah commit (ShouldDispatchAfterCommit); dipakai sinkron memori asisten AI.
+            if ($locked->status === ArticleStatus::Published) {
+                ArticlePublished::dispatch($locked);
+            } elseif ($from === ArticleStatus::Published) {
+                ArticleUnpublished::dispatch($locked);
+            }
 
             return $entry;
         });

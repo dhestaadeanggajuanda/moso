@@ -78,6 +78,7 @@ class HandleInertiaRequests extends Middleware
                     'menus' => $user->can('viewAny', Menu::class),
                     'settings' => $user->can('viewAny', Setting::class),
                     'users' => $user->can('viewAny', User::class),
+                    'assistant' => (bool) config('agentic.enabled') && $user->can('update', Setting::class),
                 ] : (object) [],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
