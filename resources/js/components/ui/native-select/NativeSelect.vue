@@ -5,6 +5,10 @@ import { useVModel } from "@vueuse/core"
 import { cn } from "@/lib/utils"
 
 // Elemen <select> asli: aksesibel, ramah ponsel, dan ikut terkirim di <Form> Inertia.
+// Atribut (name, id, required, aria-*) harus jatuh ke <select>, bukan ke <div> pembungkus:
+// tanpa name di <select>, nilainya tidak ikut terkirim.
+defineOptions({ inheritAttrs: false })
+
 const props = defineProps<{
   defaultValue?: string | number
   modelValue?: string | number | null
@@ -24,6 +28,7 @@ const modelValue = useVModel(props, "modelValue", emits, {
 <template>
   <div class="relative w-full">
     <select
+      v-bind="$attrs"
       v-model="modelValue"
       data-slot="native-select"
       :class="cn(
