@@ -1,0 +1,35 @@
+# Override: pakai MySQL dan Redis yang terpasang di host, bukan container bawaan compose.yaml.
+# Panduan: docs/DEPLOY.md, bagian "MySQL dan Redis di host".
+#
+#   cp docker/deploy/app/host-services.override.example.yaml docker/deploy/app/instances/<slug>.override.yaml
+#
+# instance.sh memuat berkas itu otomatis. Butuh Docker Compose v2.24+ (sintaks !reset).
+# Isi di instances/<slug>.env: DB_DATABASE, DB_USERNAME, DB_PASSWORD (user MySQL host untuk dinas ini),
+# REDIS_USERNAME, REDIS_PASSWORD (user ACL Redis untuk dinas ini), dan REDIS_PREFIX unik per dinas.
+# DB_ROOT_PASSWORD tidak dipakai, tetapi tetap diisi nilai acak karena compose.yaml mewajibkannya.
+# Port lain dari bawaan: HOST_DB_PORT dan HOST_REDIS_PORT di .env instance.
+
+x-host-services: &host-services
+    extra_hosts:
+        # Alamat host dari dalam container (gateway jaringan Docker).
+        - 'host.docker.internal:host-gateway'
+    # Digabung dengan environment di compose.yaml; hanya nilai ini yang diganti.
+    environment:
+        DB_HOST: host.docker.internal
+        DB_PORT: ${HOST_DB_PORT:-3306}
+        REDIS_HOST: host.docker.internal
+        REDIS_PORT: ${HOST_REDIS_PORT:-6379}
+
+services:
+    app:
+        <<: *host-services
+        # Tidak lagi menunggu container mysql dan redis.
+        depends_on: !reset {}
+    worker: *host-services
+    scheduler: *host-services
+
+    # Container bawaan tidak dijalankan.
+    mysql:
+        profiles: ['container-database']
+    redis:
+        profiles: ['container-database']

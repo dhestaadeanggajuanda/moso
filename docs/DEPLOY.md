@@ -189,6 +189,59 @@ pengunjung --HTTPS--> reverse proxy pusat --HTTP:80--> Nginx di host --> 127.0.0
 
 Setiap instance memakai MySQL dan Redis sendiri. Siapkan sekitar 1,5 sampai 2 GB RAM per instance.
 
+### MySQL dan Redis di host
+
+Bawaannya setiap instance menjalankan container MySQL dan Redis sendiri. Itu tetap pilihan yang disarankan: data dinas terpisah penuh, dan cadangan serta pembaruan ikut proyek compose. Bila server sudah punya MySQL dan Redis di host (mis. untuk menghemat RAM), instance bisa memakainya lewat override `docker/deploy/app/host-services.override.example.yaml`. Satu instance bisa memakai host, instance lain tetap container.
+
+1. MySQL di host: satu database dan satu user per dinas, hanya dari jaringan Docker.
+
+    ```sql
+    CREATE DATABASE moso_dishub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    CREATE USER 'moso_dishub'@'172.16.0.0/255.240.0.0' IDENTIFIED BY '<openssl rand -hex 24>';
+    GRANT ALL ON moso_dishub.* TO 'moso_dishub'@'172.16.0.0/255.240.0.0';
+    ```
+
+    Di `/etc/my.cnf.d/`, tambahkan IP bridge Docker ke `bind-address` (mis. `bind-address = 127.0.0.1,172.17.0.1`) lalu restart MySQL.
+
+2. Redis di host: matikan user `default` dan buat satu user ACL per dinas yang hanya boleh menyentuh key berawalan slug-nya. Di `/etc/redis/users.acl` (aktifkan dengan `aclfile /etc/redis/users.acl` di `redis.conf`):
+
+    ```
+    user default off
+    user moso_dishub on ><kata sandi acak> ~moso_dishub_* &* +@all -@dangerous
+    ```
+
+    Tambahkan IP bridge Docker ke `bind` (mis. `bind 127.0.0.1 172.17.0.1`) lalu restart Redis. User satu dinas tidak bisa membaca atau menulis key dinas lain.
+
+3. Izinkan jaringan Docker ke port 3306 dan 6379 tanpa membukanya ke publik:
+
+    ```bash
+    firewall-cmd --permanent --zone=trusted --add-source=172.16.0.0/12 && firewall-cmd --reload
+    ```
+
+4. Isi `instances/<slug>.env`:
+
+    | Variabel                                    | Nilai                                                               |
+    | ------------------------------------------- | ------------------------------------------------------------------- |
+    | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` | database dan user MySQL host untuk dinas ini                        |
+    | `DB_ROOT_PASSWORD`                          | tidak dipakai, tetapi wajib diisi nilai acak (dicek `compose.yaml`) |
+    | `REDIS_USERNAME`, `REDIS_PASSWORD`          | user ACL Redis dinas ini                                            |
+    | `REDIS_PREFIX`                              | `moso_<slug>_`, sesuai pola key di ACL                              |
+    | `HOST_DB_PORT`, `HOST_REDIS_PORT`           | hanya bila port host bukan 3306 dan 6379                            |
+
+5. Pasang override lalu jalankan seperti biasa. Container `mysql` dan `redis` instance itu tidak dijalankan, dan `app`, `worker`, serta `scheduler` terhubung ke host lewat `host.docker.internal`. Butuh Docker Compose v2.24 atau lebih baru (`docker compose version`).
+
+    ```bash
+    cp docker/deploy/app/host-services.override.example.yaml docker/deploy/app/instances/dishub.override.yaml
+    ```
+
+    ```bash
+    sh docker/deploy/app/instance.sh dishub up -d
+    ```
+
+    Bila instance juga butuh `extra_hosts` untuk SSO dan S3 (langkah 5 di atas), gabungkan keduanya di berkas override yang sama.
+
+Dengan susunan ini, cadangan database dijalankan di host (`mysqldump moso_dishub`), dan beban satu dinas di MySQL atau Redis ikut terasa oleh dinas lain.
+
 ## 7. Container yang berjalan
 
 | Service     | Tugas                                                                                                        |

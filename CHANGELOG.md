@@ -6,6 +6,7 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Ditambahkan
 
+- Override `docker/deploy/app/host-services.override.example.yaml`: instance dinas bisa memakai MySQL dan Redis yang terpasang di host (user MySQL dan user ACL Redis per dinas) sebagai ganti container bawaan. Panduan di `docs/DEPLOY.md`, bagian "MySQL dan Redis di host".
 - Halaman admin "Pengguna" (`/admin/users`, Super Admin) untuk mengelola akun pegawai, karena registrasi publik mati dan login SSO tidak pernah membuat akun:
     - Daftar akun dengan pencarian nama/email, saringan peran dan status, serta penanda tertaut SSO dan 2FA.
     - Tambah akun (nama, email, peran) dengan akses awal: tautan atur kata sandi lewat email (`AccountCreated`, berlaku sesuai `auth.passwords.users.expire`), kata sandi awal, atau tanpa kata sandi (masuk lewat SSO, hanya bila SSO aktif). Akun yang dibuat Super Admin langsung berstatus email terverifikasi.
