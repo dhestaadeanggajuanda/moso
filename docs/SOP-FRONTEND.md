@@ -50,7 +50,7 @@ Pakai class token dari `theme.css`, jangan pernah kode warna langsung.
 ```html
 <!-- Benar -->
 <p class="text-ink-muted">…</p>
-<a class="bg-brand-700 text-white hover:bg-brand-800">…</a>
+<a class="bg-brand-700 hover:bg-brand-800 text-white">…</a>
 
 <!-- Salah -->
 <p class="text-[#555]">…</p>
