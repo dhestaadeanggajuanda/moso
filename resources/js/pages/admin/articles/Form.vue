@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { TriangleAlert } from '@lucide/vue';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import ArticleController from '@/actions/App/Http/Controllers/Admin/ArticleController';
 import AiDraftDialog from '@/Admin/AiDraft/AiDraftDialog.vue';
 import ActionButtons from '@/Admin/Workflow/ActionButtons.vue';
@@ -42,12 +42,19 @@ type ArticleForm = {
         user: string;
         created_at: string | null;
     } | null;
+    /** Format datetime-local (zona waktu aplikasi), null bila belum pernah terbit. */
+    published_at: string | null;
 };
 
 const props = defineProps<{
     article: ArticleForm | null;
     categories: CategoryOption[];
     ai: AiDraftOptions;
+    publishing: {
+        mode: 'simple' | 'review';
+        /** Dihitung ArticlePolicy di server; frontend hanya menampilkan. */
+        can_publish: boolean;
+    };
 }>();
 
 defineOptions({
@@ -80,6 +87,18 @@ const imageAlt = ref('');
 const selectedCategoryIds = ref<number[]>([]);
 const imageFile = ref<File | null>(null);
 const aiDraftId = ref<string | null>(null);
+const publishedAt = ref('');
+// Tombol Terbitkan mengisi input tersembunyi "publish" sebelum form terkirim.
+const publishIntent = ref(false);
+const isPublished = computed(() => props.article?.status.value === 'published');
+const canPublishNow = computed(
+    () => props.publishing.can_publish && !isPublished.value,
+);
+const headerDescription = computed(() =>
+    props.publishing.mode === 'simple'
+        ? 'Tulis artikel lalu klik Terbitkan, atau simpan sebagai draf dulu. Tulisan Kontributor diterbitkan oleh Editor.'
+        : 'Artikel baru tersimpan sebagai draf. Simpan perubahan dulu, lalu ajukan untuk direview Editor sebelum diterbitkan Approver.',
+);
 
 watch(
     formKey,
@@ -91,6 +110,8 @@ watch(
         selectedCategoryIds.value = [...(props.article?.category_ids ?? [])];
         imageFile.value = null;
         aiDraftId.value = null;
+        publishedAt.value = props.article?.published_at ?? '';
+        publishIntent.value = false;
     },
     { immediate: true },
 );
@@ -99,6 +120,19 @@ watch(
 const hasUnconfirmedPlaceholder = computed(() =>
     /\[perlu dikonfirmasi:/i.test(body.value),
 );
+
+/**
+ * Kirim form dengan publish=1. Input tersembunyi baru berubah setelah Vue
+ * memperbarui DOM, jadi tunggu nextTick sebelum mengirim, lalu kembalikan ke 0
+ * agar tombol Simpan (atau Enter) berikutnya tidak ikut menerbitkan.
+ */
+async function submitAndPublish(event: MouseEvent): Promise<void> {
+    const form = (event.currentTarget as HTMLButtonElement).form;
+    publishIntent.value = true;
+    await nextTick();
+    form?.requestSubmit();
+    publishIntent.value = false;
+}
 
 function onImageChange(event: Event): void {
     imageFile.value = (event.target as HTMLInputElement).files?.[0] ?? null;
@@ -133,7 +167,7 @@ function applyAiDraft(application: AiDraftApplication): void {
     <div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
         <PageHeader
             :title="isEdit ? 'Ubah artikel' : 'Tulis artikel'"
-            description="Artikel baru tersimpan sebagai draf. Simpan perubahan dulu, lalu ajukan untuk direview Editor sebelum diterbitkan Approver."
+            :description="headerDescription"
         >
             <template #actions>
                 <StatusBadge v-if="article" :status="article.status" />
@@ -362,9 +396,49 @@ function applyAiDraft(application: AiDraftApplication): void {
                     <InputError :message="errors.image_alt" />
                 </div>
 
+                <div v-if="publishing.can_publish" class="grid gap-1.5">
+                    <Label for="published_at">Tanggal terbit</Label>
+                    <Input
+                        id="published_at"
+                        v-model="publishedAt"
+                        name="published_at"
+                        type="datetime-local"
+                        aria-describedby="published-at-help"
+                        :aria-invalid="!!errors.published_at"
+                    />
+                    <p
+                        id="published-at-help"
+                        class="text-xs text-muted-foreground"
+                    >
+                        Kosongkan untuk tanggal sekarang. Boleh tanggal lampau
+                        untuk kegiatan yang baru diberitakan; tanggal mendatang
+                        berarti dijadwalkan.
+                    </p>
+                    <InputError :message="errors.published_at" />
+                </div>
+
+                <input
+                    type="hidden"
+                    name="publish"
+                    :value="publishIntent ? '1' : '0'"
+                />
+                <InputError :message="errors.publish" />
+
                 <div class="flex flex-wrap items-center gap-2 border-t pt-4">
-                    <Button type="submit" :disabled="processing">
-                        {{ isEdit ? 'Simpan perubahan' : 'Simpan draf' }}
+                    <Button
+                        v-if="canPublishNow"
+                        type="button"
+                        :disabled="processing"
+                        @click="submitAndPublish"
+                    >
+                        Terbitkan
+                    </Button>
+                    <Button
+                        type="submit"
+                        :variant="canPublishNow ? 'outline' : 'default'"
+                        :disabled="processing"
+                    >
+                        {{ isPublished ? 'Simpan perubahan' : 'Simpan draf' }}
                     </Button>
                     <Button variant="ghost" as-child>
                         <Link :href="ArticleController.index()">Kembali</Link>

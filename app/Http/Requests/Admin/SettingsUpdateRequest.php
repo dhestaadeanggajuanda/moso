@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\SiteLogo;
 use App\Models\Setting;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -29,7 +30,7 @@ class SettingsUpdateRequest extends FormRequest
             'settings.*.key' => [
                 'required', 'string', 'max:100', 'regex:/^[a-z0-9_]+(\.[a-z0-9_]+)*$/', 'distinct',
                 // Path logo hanya boleh berasal dari unggahan (SiteLogoController).
-                Rule::notIn(SiteLogo::settingKeys()),
+                Rule::notIn([...SiteLogo::settingKeys(), ArticleWorkflowMode::SETTING_KEY]),
             ],
             'settings.*.value' => ['nullable', 'string', 'max:5000'],
             'settings.*.is_encrypted' => ['boolean'],
@@ -43,7 +44,7 @@ class SettingsUpdateRequest extends FormRequest
     {
         return [
             'settings.*.key.regex' => 'Key hanya boleh huruf kecil, angka, garis bawah, dipisah titik (mis. contact.phone).',
-            'settings.*.key.not_in' => 'Logo diatur lewat unggahan di bagian Logo, bukan sebagai teks.',
+            'settings.*.key.not_in' => 'Logo dan alur penerbitan diatur di bagiannya masing-masing, bukan sebagai teks.',
         ];
     }
 }

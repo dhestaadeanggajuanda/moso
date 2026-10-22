@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\RoleName;
 use App\Models\User;
+use App\Support\Settings;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
@@ -65,6 +67,14 @@ function userWithRole(RoleName $role, array $attributes = []): User
     }
 
     return User::factory()->create($attributes)->assignRole($role);
+}
+
+/**
+ * Pakai alur penerbitan tertentu untuk tes ini (bawaan aplikasi: Sederhana).
+ */
+function useArticleWorkflow(ArticleWorkflowMode $mode): void
+{
+    app(Settings::class)->put(ArticleWorkflowMode::SETTING_KEY, $mode->value);
 }
 
 /**

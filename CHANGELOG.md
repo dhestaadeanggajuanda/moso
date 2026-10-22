@@ -4,8 +4,17 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-10-22
+
+Penerbitan semudah WordPress (alur Sederhana, peran Penulis, tanggal terbit lampau, halaman teks), kelola pengguna, tampilan awal website, opsi MySQL dan Redis di host, dan asisten penulis berita. Asisten: draf berita atau liputan kegiatan disusun oleh layanan pusat moso-agentic dari judul, foto, dan deskripsi pendek. Fitur ini mati sampai `AGENTIC_ENABLED=true`.
+
 ### Ditambahkan
 
+- Alur penerbitan **Sederhana** seperti WordPress, menjadi bawaan setiap website. Super Admin bisa menggantinya ke alur **Bertahap** (ajukan, setujui, terbitkan oleh orang lain) di Pengaturan → Alur penerbitan artikel; perubahannya dicatat di log audit (`settings.article_workflow_changed`).
+    - Tombol **Terbitkan** langsung di form artikel, di samping Simpan draf. Penerbitan tetap lewat `ArticleWorkflow`, jadi riwayat, log audit, dan pemeriksaan penanda AI tetap berlaku.
+    - Kolom **Tanggal terbit**: boleh tanggal lampau untuk kegiatan yang baru diberitakan, tanggal mendatang berarti dijadwalkan. Tanggal artikel terbit bisa dikoreksi.
+    - Peran baru **Penulis** (seperti Author di WordPress): menulis dan menerbitkan artikelnya sendiri. Editor menjadi admin harian: menerbitkan dan mengubah semua artikel serta mengelola menu. Kontributor tetap perlu diterbitkan Editor.
+- **Halaman teks**: saat membuat halaman, pilih Halaman teks (isi diketik langsung di form, cocok untuk Profil atau Visi Misi) atau Halaman blok (Page Builder). Isi halaman teks disimpan sebagai satu blok Teks dan disanitasi seperti di Page Builder.
 - Tampilan awal untuk setiap website dinas: `db:seed` membuat beranda terbit (Banner, Akses Cepat, Layanan Publik, Berita Terkini, Agenda Kegiatan) dan menu header dasar bila belum ada, tanpa konten contoh, dan tidak pernah menimpa susunan admin (`DefaultHomePageSeeder`). Panduan tema baru dan dampak pembaruan di `docs/DEPLOY.md`.
 - Override `docker/deploy/app/host-services.override.example.yaml`: instance dinas bisa memakai MySQL dan Redis yang terpasang di host (user MySQL dan user ACL Redis per dinas) sebagai ganti container bawaan. Panduan di `docs/DEPLOY.md`, bagian "MySQL dan Redis di host".
 - Halaman admin "Pengguna" (`/admin/users`, Super Admin) untuk mengelola akun pegawai, karena registrasi publik mati dan login SSO tidak pernah membuat akun:
@@ -14,19 +23,6 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
     - Ubah nama, email, dan peran; nonaktifkan atau aktifkan kembali akun; lihat dan lepas tautan SSO.
     - Menu "Pengguna" di sidebar (`auth.can.users`).
 - Kolom `users.deactivated_at`. Akun dinonaktifkan, tidak dihapus, sehingga artikel dan jejak audit tetap menunjuk ke penulisnya.
-
-### Keamanan
-
-- Akun nonaktif tidak bisa masuk lewat kata sandi, "ingat saya", passkey, maupun SSO, sesinya berakhir pada permintaan berikutnya, dan tautan reset kata sandi tidak dikirim (driver user provider `active-users` di `config/auth.php`). Login kata sandi tetap menjawab dengan pesan umum.
-- `UserPolicy`: hanya Super Admin yang mengelola akun. Bila `users.manage` kelak diberikan ke role lain, pemegangnya tetap tidak bisa mengubah akun Super Admin atau memberi peran Super Admin. Super Admin tidak bisa mengubah perannya sendiri atau menonaktifkan akunnya sendiri.
-- Log audit `user.created`, `user.updated` (hanya nama kolom), `user.deactivated`, `user.activated`, dan `sso.unlinked`, masing-masing dengan `actor_id`. Kata sandi tidak pernah dikirim ke browser, lewat email, atau ke log.
-
-## [3.8.0] - 2026-10-20
-
-Asisten penulis berita: draf berita atau liputan kegiatan disusun oleh layanan pusat moso-agentic dari judul, foto, dan deskripsi pendek. Fitur ini mati sampai `AGENTIC_ENABLED=true`.
-
-### Ditambahkan
-
 - Tombol "Tulis dengan AI" di form artikel (`resources/js/Admin/AiDraft/AiDraftDialog.vue`):
     - Memakai bahan dari form (judul, ringkasan, foto yang dipilih atau gambar utama yang tersimpan) ditambah info tambahan opsional, untuk jenis "Berita atau pengumuman" atau "Liputan kegiatan".
     - Draf disusun asinkron di agentic. Browser menanyakan status tiap 2 detik dan menampilkan tahapnya ("Membaca foto…", "Mengingat berita sebelumnya…", "Menulis draf…", "Memeriksa fakta…").
@@ -38,11 +34,20 @@ Asisten penulis berita: draf berita atau liputan kegiatan disusun oleh layanan p
 
 ### Diubah
 
+- Alur Bertahap kini menerima tanggal terbit lampau saat menerbitkan (sebelumnya ditolak).
 - Artikel yang isinya masih memuat penanda "[Perlu dikonfirmasi: …]" tidak bisa diajukan atau diterbitkan. Form artikel menampilkan peringatan selama penanda itu ada.
 - Isi, ringkasan, teks alternatif, judul, dan kategori di form artikel kini terkontrol (v-model) dan tetap terkirim lewat `<Form>` seperti sebelumnya.
 
+### Diperbaiki
+
+- Pilihan dropdown (status halaman, tema, kategori PPID, jenis E-SAKIP, menu) kini ikut terkirim; sebelumnya form menolak dengan "status wajib diisi".
+
 ### Keamanan
 
+- Prinsip empat mata kini bagian dari alur Bertahap. Di alur Sederhana (bawaan) Editor, Approver, dan Penulis menerbitkan tanpa persetujuan orang lain; hanya Super Admin yang bisa mengganti alur, dan setiap penerbitan tetap tercatat di riwayat artikel dan log audit.
+- Akun nonaktif tidak bisa masuk lewat kata sandi, "ingat saya", passkey, maupun SSO, sesinya berakhir pada permintaan berikutnya, dan tautan reset kata sandi tidak dikirim (driver user provider `active-users` di `config/auth.php`). Login kata sandi tetap menjawab dengan pesan umum.
+- `UserPolicy`: hanya Super Admin yang mengelola akun. Bila `users.manage` kelak diberikan ke role lain, pemegangnya tetap tidak bisa mengubah akun Super Admin atau memberi peran Super Admin. Super Admin tidak bisa mengubah perannya sendiri atau menonaktifkan akunnya sendiri.
+- Log audit `user.created`, `user.updated` (hanya nama kolom), `user.deactivated`, `user.activated`, dan `sso.unlinked`, masing-masing dengan `actor_id`. Kata sandi tidak pernah dikirim ke browser, lewat email, atau ke log.
 - Permintaan ke agentic hanya ke `AGENTIC_URL`, tanpa mengikuti redirect, dengan token per dinas. Foto dikirim sebagai byte (dibaca dari disk `s3` bila tidak ada unggahan baru), tidak pernah sebagai URL. Kegagalan tidak pernah memutus halaman, dan log hanya mencatat operasi dan status tanpa isi konten.
 - HTML draf disanitasi ulang dengan `HtmlSanitizer` sebelum dikirim ke browser. Draf hanya bisa dibaca pemiliknya (404 untuk pengguna lain), penulis dikirim ke agentic sebagai HMAC ID, dan draf hanya ditautkan ke artikel bila milik pengguna yang sama.
 - `php artisan security:check` memeriksa token agentic dan memastikan `AGENTIC_URL` memakai HTTPS kecuali mengarah ke jaringan privat.

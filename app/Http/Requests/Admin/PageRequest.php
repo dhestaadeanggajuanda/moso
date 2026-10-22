@@ -10,8 +10,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Metadata halaman. Isi `content_blocks` disunting lewat Page Builder (Fase 3)
- * dan divalidasi terhadap BlockRegistry di sana, jadi tidak diterima di sini.
+ * Metadata halaman, plus isi untuk "halaman teks". Halaman blok disusun lewat
+ * Page Builder dan divalidasi terhadap BlockRegistry di sana. Isi halaman teks
+ * disimpan sebagai satu blok RichText dan disanitasi oleh blok itu.
  */
 class PageRequest extends FormRequest
 {
@@ -42,6 +43,9 @@ class PageRequest extends FormRequest
             // Kosong = ikut tema aktif situs. Hanya tema yang dikompilasi yang boleh dipilih.
             'theme' => ['nullable', 'string', Rule::in(config('themes.enabled'))],
             'meta_description' => ['nullable', 'string', 'max:300'],
+            // Jenis halaman baru: "text" (isi diketik di form ini) atau "blocks" (Page Builder).
+            'layout' => ['sometimes', Rule::in(['text', 'blocks'])],
+            'body' => ['nullable', 'string', 'max:50000'],
         ];
     }
 
@@ -58,7 +62,7 @@ class PageRequest extends FormRequest
      */
     public function attributes(): array
     {
-        return ['title' => 'judul', 'meta_description' => 'deskripsi meta', 'theme' => 'tema'];
+        return ['title' => 'judul', 'meta_description' => 'deskripsi meta', 'theme' => 'tema', 'body' => 'isi halaman'];
     }
 
     private function page(): ?Page

@@ -80,7 +80,7 @@ it('refuses to set a logo path through the text settings form', function () {
         ->put(route('admin.settings.update'), [
             'settings' => [['key' => 'site.logo_dinas', 'value' => 'articles/foto-orang.webp']],
         ])
-        ->assertInvalid(['settings.0.key' => 'Logo diatur lewat unggahan']);
+        ->assertInvalid(['settings.0.key' => 'Logo dan alur penerbitan diatur di bagiannya masing-masing']);
 
     expect($settings->get('site.logo_dinas'))->toBe('branding/logo-dinas.webp');
 });

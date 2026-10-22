@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ArticleStatus;
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\RoleName;
 use App\Models\Article;
 use App\Models\ArticleComment;
@@ -174,7 +175,8 @@ describe('update', function () {
         Storage::disk('s3')->assertExists($article->image_path);
     });
 
-    it('stops an editor from changing an article that is already published', function () {
+    it('stops an editor from changing an article that is already published in the review workflow', function () {
+        useArticleWorkflow(ArticleWorkflowMode::Review);
         $article = Article::factory()->published()->create(['title' => 'Judul terbit']);
 
         $this->actingAs(userWithRole(RoleName::Editor))
@@ -196,7 +198,8 @@ describe('destroy', function () {
         $this->assertSoftDeleted($article);
     });
 
-    it('stops an editor from taking down a published article', function () {
+    it('stops an editor from taking down a published article in the review workflow', function () {
+        useArticleWorkflow(ArticleWorkflowMode::Review);
         $article = Article::factory()->published()->create();
 
         $this->actingAs(userWithRole(RoleName::Editor))
@@ -209,6 +212,7 @@ describe('destroy', function () {
 
 describe('show', function () {
     it('shows an editor the review actions and history of a submitted article', function () {
+        useArticleWorkflow(ArticleWorkflowMode::Review);
         $article = Article::factory()->status(ArticleStatus::Submitted)->create();
         ArticleComment::factory()->for($article)->statusChange(ArticleStatus::Draft, ArticleStatus::Submitted)->create();
 

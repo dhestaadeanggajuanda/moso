@@ -80,6 +80,25 @@ class Page extends Model
     }
 
     /**
+     * "Halaman teks": belum punya blok, atau hanya satu blok Teks. Isinya
+     * disunting langsung di form halaman, tanpa Page Builder.
+     */
+    public function isTextPage(): bool
+    {
+        $blocks = $this->content_blocks;
+
+        return $blocks === [] || (count($blocks) === 1 && $blocks[0]['type'] === 'RichText');
+    }
+
+    /**
+     * Isi HTML halaman teks (sudah disanitasi saat disimpan), atau string kosong.
+     */
+    public function textBody(): string
+    {
+        return $this->isTextPage() ? (string) ($this->content_blocks[0]['props']['html'] ?? '') : '';
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

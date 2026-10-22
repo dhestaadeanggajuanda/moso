@@ -75,6 +75,7 @@ Route::middleware(['auth', 'verified', EnsureTwoFactorForPrivilegedRoles::class]
 
         Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::put('settings/workflow', [SettingController::class, 'updateWorkflow'])->name('settings.workflow.update');
         Route::post('settings/logos/{logo}', [SiteLogoController::class, 'update'])
             ->middleware('throttle:20,1')
             ->name('settings.logos.update');

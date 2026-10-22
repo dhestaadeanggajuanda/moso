@@ -1,8 +1,12 @@
 <?php
 
 use App\Enums\ArticleStatus;
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\RoleName;
 use App\Models\Article;
+
+// Tes ini menjaga alur Bertahap (empat mata); alur Sederhana diuji di ArticleSimpleWorkflowTest.
+beforeEach(fn () => useArticleWorkflow(ArticleWorkflowMode::Review));
 
 test('every staff role may list and create articles', function (RoleName $role) {
     $user = userWithRole($role);

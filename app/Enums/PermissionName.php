@@ -15,6 +15,8 @@ enum PermissionName: string
     case ArticlesDeleteAny = 'articles.delete_any';
     case ArticlesReview = 'articles.review';
     case ArticlesPublish = 'articles.publish';
+    /** Menerbitkan artikel milik sendiri (peran Penulis, hanya di alur Sederhana). */
+    case ArticlesPublishOwn = 'articles.publish_own';
 
     case CategoriesManage = 'categories.manage';
     case PagesManage = 'pages.manage';
@@ -52,7 +54,14 @@ enum PermissionName: string
 
         return [
             RoleName::Approver->value => [...$editorial, self::ArticlesPublish, self::MenusManage],
-            RoleName::Editor->value => [...$editorial, self::ArticlesReview],
+            RoleName::Editor->value => [...$editorial, self::ArticlesReview, self::MenusManage],
+            RoleName::Penulis->value => [
+                self::ArticlesViewAny,
+                self::ArticlesCreate,
+                self::ArticlesUpdateOwn,
+                self::ArticlesPublishOwn,
+                self::MediaUpload,
+            ],
             RoleName::Kontributor->value => [
                 self::ArticlesViewAny,
                 self::ArticlesCreate,

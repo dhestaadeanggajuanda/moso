@@ -25,9 +25,19 @@ type LogoSlot = {
     url: string | null;
 };
 
+type WorkflowOption = {
+    value: 'simple' | 'review';
+    label: string;
+    description: string;
+};
+
 defineProps<{
     settings: SettingRow[];
     logos: LogoSlot[];
+    workflow: {
+        mode: WorkflowOption['value'];
+        options: WorkflowOption[];
+    };
 }>();
 
 defineOptions({
@@ -51,6 +61,54 @@ function inputId(key: string): string {
             title="Pengaturan situs"
             description="Identitas, kontak, dan tema situs. Hanya Super Admin yang dapat mengubah halaman ini."
         />
+
+        <section aria-labelledby="pengaturan-alur" class="grid gap-4">
+            <div>
+                <h2 id="pengaturan-alur" class="text-base font-semibold">
+                    Alur penerbitan artikel
+                </h2>
+                <p class="text-sm text-muted-foreground">
+                    Berlaku untuk semua artikel di situs ini. Artikel yang sudah
+                    terbit tidak berubah saat alur diganti.
+                </p>
+            </div>
+            <Form
+                v-bind="SettingController.updateWorkflow.form()"
+                class="grid gap-3"
+                v-slot="{ errors, processing }"
+            >
+                <fieldset class="grid gap-2">
+                    <legend class="sr-only">Pilih alur penerbitan</legend>
+                    <label
+                        v-for="option in workflow.options"
+                        :key="option.value"
+                        class="flex cursor-pointer gap-3 rounded-md border p-3 has-[:checked]:border-primary has-[:checked]:bg-muted/50"
+                    >
+                        <input
+                            type="radio"
+                            name="mode"
+                            :value="option.value"
+                            :checked="option.value === workflow.mode"
+                            class="mt-1 size-4 accent-primary"
+                        />
+                        <span class="grid gap-0.5">
+                            <span class="text-sm font-medium">{{
+                                option.label
+                            }}</span>
+                            <span class="text-sm text-muted-foreground">{{
+                                option.description
+                            }}</span>
+                        </span>
+                    </label>
+                </fieldset>
+                <InputError :message="errors.mode" />
+                <div>
+                    <Button type="submit" :disabled="processing"
+                        >Simpan alur</Button
+                    >
+                </div>
+            </Form>
+        </section>
 
         <section aria-labelledby="pengaturan-logo" class="grid gap-4">
             <div>

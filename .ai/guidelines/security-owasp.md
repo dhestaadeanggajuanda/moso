@@ -37,7 +37,7 @@ Aturan ini wajib dipatuhi di setiap perubahan kode. Matriks lengkapnya ada di `d
 ## A06 / A08 Insecure Design dan Integrity
 
 - `content_blocks` divalidasi terhadap `BlockRegistry` sebelum disimpan. Jangan memakai `unserialize()` untuk input apa pun.
-- Prinsip empat mata: artikel terbit atau diarsipkan hanya diubah/dihapus pemegang hak terbitkan (`ArticleStatus::requiresPublisher()` di `ArticlePolicy`), dan isinya tidak diubah penulisnya sendiri.
+- Alur penerbitan per website (`ArticleWorkflowMode`, setting `articles.workflow`, hanya Super Admin): Sederhana (bawaan, seperti WordPress) atau Bertahap (empat mata). Semua aturan alur ada di `ArticlePolicy` dan `ArticleAction::fromStatuses()`, tidak pernah di frontend. Kontributor tidak pernah menerbitkan sendiri di alur mana pun, dan penerbitan dari form tetap lewat `ArticleWorkflow`.
 
 ## A07 Authentication Failures
 

@@ -6,9 +6,11 @@ use App\Enums\AiDraftKind;
 use App\Enums\ArticleAction;
 use App\Enums\ArticleCommentType;
 use App\Enums\ArticleStatus;
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\PermissionName;
 use App\Events\ArticlePublished;
 use App\Events\ArticleUnpublished;
+use App\Exceptions\InvalidArticleTransition;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ArticleRequest;
 use App\Models\Article;
@@ -20,6 +22,7 @@ use App\Services\Agentic\AgenticClient;
 use App\Services\Content\HtmlSanitizer;
 use App\Services\Storage\SecureUploadService;
 use App\Services\Workflow\ArticleWorkflow;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +30,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -132,14 +136,21 @@ class ArticleController extends Controller
     {
         Gate::authorize('create', Article::class);
 
+        /** @var User $user */
+        $user = request()->user();
+
         return Inertia::render('admin/articles/Form', [
             'article' => null,
+            'publishing' => [
+                'mode' => ArticleWorkflowMode::current()->value,
+                'can_publish' => $user->can('publishOwnNew', Article::class),
+            ],
             'categories' => $this->categoryOptions(),
             'ai' => $this->aiOptions($agentic),
         ]);
     }
 
-    public function store(ArticleRequest $request, HtmlSanitizer $sanitizer, SecureUploadService $uploads): RedirectResponse
+    public function store(ArticleRequest $request, HtmlSanitizer $sanitizer, SecureUploadService $uploads, ArticleWorkflow $workflow): RedirectResponse
     {
         $article = new Article($this->contentAttributes($request, $sanitizer));
         $article->author()->associate($request->user());
@@ -154,7 +165,9 @@ class ArticleController extends Controller
             $this->linkAiDraft($request, $article);
         });
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Artikel disimpan sebagai draf.']);
+        $published = $this->publishFromForm($request, $article, $workflow);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => $published ?? 'Artikel disimpan sebagai draf.']);
 
         return to_route('admin.articles.edit', $article);
     }
@@ -183,13 +196,19 @@ class ArticleController extends Controller
                 'can' => ['delete' => $user->can('delete', $article)],
                 'actions' => $this->actionOptions($workflow->availableActions($article, $user)),
                 'revision_note' => $this->latestRevisionNote($article),
+                'published_at' => $article->published_at?->format('Y-m-d\TH:i'),
+            ],
+            'publishing' => [
+                'mode' => ArticleWorkflowMode::current()->value,
+                'can_publish' => $user->can('publish', $article)
+                    || ($article->status === ArticleStatus::Published && $user->can('update', $article)),
             ],
             'categories' => $this->categoryOptions(),
             'ai' => $this->aiOptions($agentic),
         ]);
     }
 
-    public function update(ArticleRequest $request, Article $article, HtmlSanitizer $sanitizer, SecureUploadService $uploads): RedirectResponse
+    public function update(ArticleRequest $request, Article $article, HtmlSanitizer $sanitizer, SecureUploadService $uploads, ArticleWorkflow $workflow): RedirectResponse
     {
         $article->fill($this->contentAttributes($request, $sanitizer));
 
@@ -212,14 +231,62 @@ class ArticleController extends Controller
             $uploads->delete($oldImage);
         }
 
+        $wasPublished = $article->status === ArticleStatus::Published;
+        $published = $this->publishFromForm($request, $article, $workflow);
+
         // Isi berita yang sudah tayang berubah: perbarui juga memori asisten AI.
-        if ($article->status === ArticleStatus::Published) {
+        // (Penerbitan baru sudah mengirim event ini lewat ArticleWorkflow.)
+        if ($wasPublished) {
             ArticlePublished::dispatch($article);
         }
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => 'Artikel diperbarui.']);
+        Inertia::flash('toast', ['type' => 'success', 'message' => $published ?? 'Artikel diperbarui.']);
 
         return to_route('admin.articles.edit', $article);
+    }
+
+    /**
+     * Tombol "Terbitkan" di form (alur Sederhana) dan koreksi tanggal terbit.
+     *
+     * Penerbitan tetap lewat ArticleWorkflow agar riwayat, log audit, dan
+     * pemeriksaan penanda AI berlaku sama seperti tombol aksi alur. Tanggal
+     * lampau terbit langsung dengan tanggal itu; tanggal depan = dijadwalkan.
+     *
+     * @return string|null Pesan bila artikel diterbitkan atau tanggalnya diubah
+     */
+    private function publishFromForm(ArticleRequest $request, Article $article, ArticleWorkflow $workflow): ?string
+    {
+        $publishAt = $request->filled('published_at')
+            ? CarbonImmutable::parse((string) $request->validated('published_at'), config('app.timezone'))
+            : null;
+
+        if ($article->status === ArticleStatus::Published) {
+            if ($publishAt !== null && ! $publishAt->equalTo($article->published_at)) {
+                $article->published_at = $publishAt;
+                $article->save();
+
+                return 'Artikel diperbarui, tanggal terbit diubah.';
+            }
+
+            return null;
+        }
+
+        if (! $request->boolean('publish')) {
+            return null;
+        }
+
+        Gate::authorize('publish', $article);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        try {
+            $workflow->apply($article, ArticleAction::Publish, $user, null, $publishAt);
+        } catch (InvalidArticleTransition $exception) {
+            throw ValidationException::withMessages(['publish' => $exception->getMessage()]);
+        }
+
+        return $publishAt?->isFuture() ? 'Artikel disimpan dan dijadwalkan terbit.' : 'Artikel diterbitkan.';
     }
 
     public function destroy(Article $article): RedirectResponse

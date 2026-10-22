@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\SiteLogo;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ArticleWorkflowSettingRequest;
 use App\Http\Requests\Admin\SettingsUpdateRequest;
 use App\Models\Setting;
+use App\Support\AuditLog;
 use App\Support\Settings;
 use App\Support\SiteContext;
 use Illuminate\Http\RedirectResponse;
@@ -21,8 +24,8 @@ class SettingController extends Controller
 
         return Inertia::render('admin/settings/Index', [
             'settings' => Setting::query()
-                // Logo diatur lewat unggahan (SiteLogoController), bukan kolom teks.
-                ->whereNotIn('key', SiteLogo::settingKeys())
+                // Logo diatur lewat unggahan dan alur artikel lewat pilihan sendiri, bukan kolom teks.
+                ->whereNotIn('key', [...SiteLogo::settingKeys(), ArticleWorkflowMode::SETTING_KEY])
                 ->orderBy('key')
                 ->get()
                 ->map(fn (Setting $setting) => [
@@ -37,7 +40,26 @@ class SettingController extends Controller
                 'label' => $logo->label(),
                 'url' => $site->logoUrl($logo->settingKey()),
             ], SiteLogo::cases()),
+            'workflow' => [
+                'mode' => ArticleWorkflowMode::current()->value,
+                'options' => ArticleWorkflowMode::options(),
+            ],
         ]);
+    }
+
+    public function updateWorkflow(ArticleWorkflowSettingRequest $request, Settings $settings): RedirectResponse
+    {
+        $mode = ArticleWorkflowMode::from((string) $request->validated('mode'));
+        $settings->put(ArticleWorkflowMode::SETTING_KEY, $mode->value);
+
+        AuditLog::record('settings.article_workflow_changed', [
+            'user_id' => $request->user()?->id,
+            'mode' => $mode->value,
+        ]);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => "Alur penerbitan diubah ke {$mode->label()}."]);
+
+        return to_route('admin.settings.index');
     }
 
     public function update(SettingsUpdateRequest $request, Settings $settings): RedirectResponse

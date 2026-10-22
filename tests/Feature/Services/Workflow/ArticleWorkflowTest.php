@@ -3,12 +3,16 @@
 use App\Enums\ArticleAction;
 use App\Enums\ArticleCommentType;
 use App\Enums\ArticleStatus;
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\RoleName;
 use App\Exceptions\InvalidArticleTransition;
 use App\Models\Article;
 use App\Services\Workflow\ArticleWorkflow;
 use Illuminate\Support\Facades\Log;
 use Psr\Log\LoggerInterface;
+
+// Tes ini menjaga alur Bertahap (empat mata); alur Sederhana diuji di ArticleSimpleWorkflowTest.
+beforeEach(fn () => useArticleWorkflow(ArticleWorkflowMode::Review));
 
 it('moves an article through review to publication and records each step', function () {
     $this->freezeSecond();

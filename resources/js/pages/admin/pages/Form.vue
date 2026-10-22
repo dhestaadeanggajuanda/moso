@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import PageBuilderController from '@/actions/App/Http/Controllers/Admin/PageBuilderController';
 import PageController from '@/actions/App/Http/Controllers/Admin/PageController';
 import PageHeader from '@/components/admin/PageHeader.vue';
@@ -21,6 +21,10 @@ const props = defineProps<{
         status: string;
         theme: string | null;
         blocks_count: number;
+        /** text = isi diketik di form ini; blocks = disusun di Page Builder. */
+        layout: 'text' | 'blocks';
+        /** Isi HTML halaman teks (sudah disanitasi server). */
+        body: string;
         updated_at: string | null;
         public_url: string;
     } | null;
@@ -40,6 +44,10 @@ const formAction = computed(() =>
         ? PageController.update.form(props.page.id)
         : PageController.store.form(),
 );
+// Halaman baru: pilih jenisnya. Halaman lama: jenis mengikuti isinya.
+const newLayout = ref<'text' | 'blocks'>('text');
+const layout = computed(() => props.page?.layout ?? newLayout.value);
+
 // Pasang ulang form setelah simpan agar menampilkan nilai versi server (mis. slug otomatis).
 const formKey = computed(() =>
     props.page ? `${props.page.id}-${props.page.updated_at}` : 'new',
@@ -55,7 +63,7 @@ const formKey = computed(() =>
             :description="
                 page
                     ? `${page.blocks_count} blok konten.`
-                    : 'Simpan halaman dulu, lalu susun isinya di Page Builder.'
+                    : 'Halaman teks diisi langsung di sini, seperti WordPress. Halaman blok disusun di Page Builder sesudah disimpan.'
             "
         >
             <template v-if="page" #actions>
@@ -105,6 +113,64 @@ const formKey = computed(() =>
                     :aria-invalid="!!errors.slug"
                 />
                 <InputError :message="errors.slug" />
+            </div>
+
+            <fieldset v-if="!page" class="grid gap-2">
+                <legend class="mb-1 text-sm font-medium">Jenis halaman</legend>
+                <input type="hidden" name="layout" :value="newLayout" />
+                <label
+                    class="flex cursor-pointer gap-3 rounded-md border p-3 has-[:checked]:border-primary has-[:checked]:bg-muted/50"
+                >
+                    <input
+                        v-model="newLayout"
+                        type="radio"
+                        value="text"
+                        class="mt-1 size-4 accent-primary"
+                    />
+                    <span class="grid gap-0.5 text-sm">
+                        <span class="font-medium">Halaman teks</span>
+                        <span class="text-muted-foreground"
+                            >Judul dan isi, mis. Profil, Visi Misi, Struktur
+                            Organisasi.</span
+                        >
+                    </span>
+                </label>
+                <label
+                    class="flex cursor-pointer gap-3 rounded-md border p-3 has-[:checked]:border-primary has-[:checked]:bg-muted/50"
+                >
+                    <input
+                        v-model="newLayout"
+                        type="radio"
+                        value="blocks"
+                        class="mt-1 size-4 accent-primary"
+                    />
+                    <span class="grid gap-0.5 text-sm">
+                        <span class="font-medium">Halaman blok</span>
+                        <span class="text-muted-foreground"
+                            >Disusun dari banner, berita, layanan, dan blok lain
+                            di Page Builder, mis. beranda.</span
+                        >
+                    </span>
+                </label>
+            </fieldset>
+
+            <div v-if="layout === 'text'" class="grid gap-1.5">
+                <Label for="body">Isi halaman</Label>
+                <Textarea
+                    id="body"
+                    name="body"
+                    rows="16"
+                    class="font-mono text-sm"
+                    :default-value="page?.body ?? ''"
+                    aria-describedby="body-help"
+                    :aria-invalid="!!errors.body"
+                />
+                <p id="body-help" class="text-xs text-muted-foreground">
+                    Teks dan HTML sederhana (paragraf, judul, daftar, tautan,
+                    tabel, gambar dari unggahan). Skrip dan gaya inline dibuang
+                    otomatis.
+                </p>
+                <InputError :message="errors.body" />
             </div>
 
             <div class="grid gap-1.5">

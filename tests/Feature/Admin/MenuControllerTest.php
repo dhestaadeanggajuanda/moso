@@ -5,15 +5,16 @@ use App\Enums\RoleName;
 use App\Models\Menu;
 use App\Models\Page;
 
-it('reserves menu management for approvers', function () {
-    $this->actingAs(userWithRole(RoleName::Editor))
-        ->get(route('admin.menus.index'))
-        ->assertForbidden();
+it('lets site admins manage menus but not writers', function (RoleName $role, bool $allowed) {
+    $response = $this->actingAs(userWithRole($role))->get(route('admin.menus.index'));
 
-    $this->actingAs(userWithRole(RoleName::Approver))
-        ->get(route('admin.menus.index'))
-        ->assertOk();
-});
+    $allowed ? $response->assertOk() : $response->assertForbidden();
+})->with([
+    'approver' => [RoleName::Approver, true],
+    'editor (admin harian)' => [RoleName::Editor, true],
+    'penulis' => [RoleName::Penulis, false],
+    'kontributor' => [RoleName::Kontributor, false],
+]);
 
 it('creates a menu item linked to a page', function () {
     $page = Page::factory()->published()->create(['slug' => 'profil']);

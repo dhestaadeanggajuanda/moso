@@ -5,12 +5,12 @@ use App\Enums\RoleName;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Spatie\Permission\Models\Role;
 
-it('creates the four roles idempotently', function () {
+it('creates the five roles idempotently', function () {
     $this->seed(RolesAndPermissionsSeeder::class);
     $this->seed(RolesAndPermissionsSeeder::class);
 
     expect(Role::query()->pluck('name')->sort()->values()->all())
-        ->toBe(['Approver', 'Editor', 'Kontributor', 'Super Admin']);
+        ->toBe(['Approver', 'Editor', 'Kontributor', 'Penulis', 'Super Admin']);
 });
 
 it('keeps settings and user management away from every non super admin role', function (RoleName $role) {

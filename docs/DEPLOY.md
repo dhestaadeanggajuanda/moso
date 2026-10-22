@@ -267,6 +267,14 @@ docker compose -f docker/deploy/app/compose.yaml up -d --build
 
 Untuk beberapa instance: `git pull`, sekali `sh docker/deploy/app/instance.sh <slug> build`, lalu `sh docker/deploy/app/instance.sh <slug> up -d` untuk setiap instance.
 
+Bila CHANGELOG menyebut perubahan peran atau permission (mis. 3.8.0: peran Penulis, Editor mengelola menu), jalankan sekali per instance sesudah `up -d`:
+
+```bash
+sh docker/deploy/app/instance.sh <slug> exec app php artisan db:seed --class=RolesAndPermissionsSeeder --force
+```
+
+Seeder ini hanya menyelaraskan role dan permission bawaan; akun, peran yang sudah diberikan, dan konten tidak berubah.
+
 Image baru dibangun, migrasi berjalan saat `app` start, dan worker Octane memuat kode baru karena container dibuat ulang. Setelah mengubah `.env`, cukup `up -d` (tanpa `--build`) agar container dibuat ulang dengan nilai baru.
 
 Untuk rollback, beri tag image sebelum memperbarui (`MOSO_APP_IMAGE` dan `MOSO_SSR_IMAGE` di `.env`), lalu kembalikan tag-nya. Migrasi yang sudah berjalan tidak ikut dibatalkan.

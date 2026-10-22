@@ -41,8 +41,8 @@ class TransitionArticleRequest extends FormRequest
             'published_at' => [
                 Rule::prohibitedIf(! ($action?->allowsSchedule() ?? false)),
                 'nullable',
+                // Tanggal lampau boleh (kegiatan lama yang baru diberitakan); tanggal depan = dijadwalkan.
                 'date',
-                'after_or_equal:now',
             ],
         ];
     }
@@ -54,7 +54,6 @@ class TransitionArticleRequest extends FormRequest
     {
         return [
             'note.required' => 'Tulis catatan revisi agar penulis tahu apa yang perlu diperbaiki.',
-            'published_at.after_or_equal' => 'Jadwal terbit tidak boleh di masa lalu.',
         ];
     }
 
@@ -66,7 +65,7 @@ class TransitionArticleRequest extends FormRequest
         return [
             'action' => 'aksi',
             'note' => 'catatan',
-            'published_at' => 'jadwal terbit',
+            'published_at' => 'tanggal terbit',
         ];
     }
 }

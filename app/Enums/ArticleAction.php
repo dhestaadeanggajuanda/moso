@@ -33,17 +33,22 @@ enum ArticleAction: string
     }
 
     /**
-     * Status asal yang mengizinkan aksi ini.
+     * Status asal yang mengizinkan aksi ini. Di alur Sederhana artikel bisa
+     * langsung diterbitkan dari draf, dan langkah "Setujui" tidak dipakai.
      *
      * @return list<ArticleStatus>
      */
-    public function fromStatuses(): array
+    public function fromStatuses(?ArticleWorkflowMode $mode = null): array
     {
+        $simple = ($mode ?? ArticleWorkflowMode::current()) === ArticleWorkflowMode::Simple;
+
         return match ($this) {
             self::Submit => [ArticleStatus::Draft, ArticleStatus::RevisionRequired],
-            self::Approve => [ArticleStatus::Submitted],
+            self::Approve => $simple ? [] : [ArticleStatus::Submitted],
             self::RequestRevision => [ArticleStatus::Submitted, ArticleStatus::ReadyToPublish],
-            self::Publish => [ArticleStatus::ReadyToPublish],
+            self::Publish => $simple
+                ? [ArticleStatus::Draft, ArticleStatus::Submitted, ArticleStatus::RevisionRequired, ArticleStatus::ReadyToPublish]
+                : [ArticleStatus::ReadyToPublish],
             self::Archive => [ArticleStatus::Published],
             self::Unarchive => [ArticleStatus::Archived],
         };
@@ -75,9 +80,9 @@ enum ArticleAction: string
         };
     }
 
-    public function allowsFrom(ArticleStatus $status): bool
+    public function allowsFrom(ArticleStatus $status, ?ArticleWorkflowMode $mode = null): bool
     {
-        return in_array($status, $this->fromStatuses(), true);
+        return in_array($status, $this->fromStatuses($mode), true);
     }
 
     /**

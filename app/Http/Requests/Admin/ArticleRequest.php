@@ -47,6 +47,10 @@ class ArticleRequest extends FormRequest
             'category_ids.*' => ['integer', Rule::exists('categories', 'id')],
             // Draf asisten AI yang dipakai; kepemilikannya dicek saat ditautkan (ArticleController).
             'ai_draft_id' => ['nullable', 'uuid'],
+            // Tombol "Terbitkan" di form (alur Sederhana); haknya dicek ArticlePolicy::publish.
+            'publish' => ['boolean'],
+            // Tanggal lampau boleh (kegiatan lama yang baru diberitakan); tanggal depan = dijadwalkan.
+            'published_at' => ['nullable', 'date'],
         ];
     }
 
@@ -62,6 +66,7 @@ class ArticleRequest extends FormRequest
             'image' => 'gambar utama',
             'image_alt' => 'teks alternatif gambar',
             'category_ids' => 'kategori',
+            'published_at' => 'tanggal terbit',
         ];
     }
 

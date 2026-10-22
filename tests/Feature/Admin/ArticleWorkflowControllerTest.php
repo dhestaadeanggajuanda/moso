@@ -1,8 +1,12 @@
 <?php
 
 use App\Enums\ArticleStatus;
+use App\Enums\ArticleWorkflowMode;
 use App\Enums\RoleName;
 use App\Models\Article;
+
+// Tes ini menjaga alur Bertahap (empat mata); alur Sederhana diuji di ArticleSimpleWorkflowTest.
+beforeEach(fn () => useArticleWorkflow(ArticleWorkflowMode::Review));
 
 it('lets a kontributor submit their own draft for review', function () {
     $kontributor = userWithRole(RoleName::Kontributor);
@@ -66,14 +70,18 @@ it('requires a note when sending an article back for revision', function () {
     expect($article->fresh()->status)->toBe(ArticleStatus::Submitted);
 });
 
-it('rejects a past publication schedule and schedules on other actions', function () {
+it('publishes with a past date for older events and refuses a date on other actions', function () {
     $ready = Article::factory()->status(ArticleStatus::ReadyToPublish)->create();
     $submitted = Article::factory()->status(ArticleStatus::Submitted)->create();
     $approver = userWithRole(RoleName::Approver);
+    $eventDate = now()->subDays(10)->startOfMinute();
 
     $this->actingAs($approver)
-        ->post(route('admin.articles.transitions.store', $ready), ['action' => 'publish', 'published_at' => now()->subDay()->toDateTimeString()])
-        ->assertInvalid(['published_at' => 'Jadwal terbit tidak boleh di masa lalu.']);
+        ->post(route('admin.articles.transitions.store', $ready), ['action' => 'publish', 'published_at' => $eventDate->toDateTimeString()])
+        ->assertSessionHasNoErrors();
+
+    expect($ready->refresh()->status)->toBe(ArticleStatus::Published)
+        ->and($ready->published_at->equalTo($eventDate))->toBeTrue();
 
     $this->actingAs($approver)
         ->post(route('admin.articles.transitions.store', $submitted), ['action' => 'approve', 'published_at' => now()->addDay()->toDateTimeString()])
