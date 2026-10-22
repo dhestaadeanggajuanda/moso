@@ -271,6 +271,32 @@ Image baru dibangun, migrasi berjalan saat `app` start, dan worker Octane memuat
 
 Untuk rollback, beri tag image sebelum memperbarui (`MOSO_APP_IMAGE` dan `MOSO_SSR_IMAGE` di `.env`), lalu kembalikan tag-nya. Migrasi yang sudah berjalan tidak ikut dibatalkan.
 
+### Apa yang berubah dan tidak berubah saat memperbarui
+
+Kode (`git pull`) dan isi website (database tiap instance) terpisah:
+
+| Disimpan di                       | Contoh                                                                                                       | Saat `git pull` + build |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------- |
+| Database instance                 | Susunan blok Page Builder (mis. moso memakai Banner Bergeser, dishub tidak), artikel, menu, pengaturan, logo | **Tidak berubah**       |
+| RustFS                            | Foto dan dokumen PDF                                                                                         | **Tidak berubah**       |
+| Kode tema (`resources/js/Themes`) | Bentuk visual tiap jenis blok, header, footer, warna                                                         | Ikut berubah            |
+
+Jadi pembaruan keamanan tidak mengubah susunan halaman yang dibuat admin. Yang bisa berubah hanya tampilan sebuah jenis blok bila kode temanya diubah, dan perubahan itu berlaku untuk semua instance yang memakai tema itu. Cek CHANGELOG sebelum memperbarui; perubahan visual dicatat di sana.
+
+`db:seed` juga aman dijalankan ulang: `DefaultHomePageSeeder` hanya membuat beranda dan menu dasar bila belum ada, dan tidak pernah menimpa susunan admin.
+
+## 8a. Tampilan awal dan tema
+
+**Tampilan awal.** `db:seed` di instance baru membuat halaman `beranda` yang langsung terbit (Banner, Akses Cepat, Layanan Publik, Berita Terkini, Agenda Kegiatan) dan menu header dasar (Beranda, Berita, Layanan, Informasi Publik, E-SAKIP), tanpa berita atau akun contoh. Admin tinggal mengganti teks dan foto banner di Page Builder, dan menyalakan berita Media Center dengan mengisi kata kunci dinas di blok Berita Terkini. Konten demo lengkap hanya dimuat di `APP_ENV=local`.
+
+**Tema baru.** Tema ada di `resources/js/Themes/<NamaTema>` dan ikut dikompilasi ke image saat build, hanya bila tercantum di `VITE_THEMES`:
+
+1. Tambahkan folder tema di repo (lihat `docs/SOP-FRONTEND.md`), commit, lalu `git pull` di server.
+2. Pilih cara memakainya:
+    - **Satu image untuk semua dinas.** Di `.env` instance yang membangun image, isi `VITE_THEMES=TemaModern,TemaBaru`, lalu build sekali. Setiap dinas memilih temanya sendiri (Pengaturan, atau kolom Tema per halaman); dinas yang tidak memilih tetap memakai tema pertama.
+    - **Image terpisah per tema.** Bila hanya satu dinas yang memakai tema baru, beri nama image berbeda di `.env` dinas itu, mis. `MOSO_APP_IMAGE=moso-app:tema-baru`, `MOSO_SSR_IMAGE=moso-ssr:tema-baru`, dan `VITE_THEMES=TemaBaru`. Lalu `instance.sh <slug> build` dan `up -d` untuk dinas itu saja. Dinas lain tidak terpengaruh.
+3. Halaman yang sudah ada tetap memakai susunan blok yang sama; hanya bentuk visualnya yang mengikuti tema baru. Tema wajib menyediakan komponen untuk setiap jenis blok yang dipakai, agar tidak ada blok yang kosong.
+
 ## 9. Cadangan dan log
 
 - Database aplikasi:

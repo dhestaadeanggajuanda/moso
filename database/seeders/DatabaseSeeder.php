@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             SettingsSeeder::class,
             SuperAdminSeeder::class,
+            DefaultHomePageSeeder::class,
         ]);
 
         if (app()->isLocal()) {

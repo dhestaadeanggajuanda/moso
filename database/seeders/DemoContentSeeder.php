@@ -11,7 +11,6 @@ use App\Models\Article;
 use App\Models\Category;
 use App\Models\ESakip;
 use App\Models\Menu;
-use App\Models\Page;
 use App\Models\PublicDocument;
 use App\Models\Service;
 use App\Models\User;
@@ -60,20 +59,15 @@ class DemoContentSeeder extends Seeder
 
         Agenda::factory()->count(6)->create();
 
-        $beranda = Page::query()->firstOrCreate(['slug' => 'beranda'], [
-            'title' => 'Beranda',
-            'content_blocks' => [],
-            'status' => 'published',
-        ]);
-
-        $this->seedCompliance($beranda);
+        // Beranda dan menu dasar dibuat DefaultHomePageSeeder (dipanggil lebih dulu).
+        $this->seedCompliance();
     }
 
     /**
      * Contoh modul kepatuhan: layanan, menu bertingkat, serta dokumen PPID
      * dan SAKIP dengan PDF contoh di disk privat.
      */
-    private function seedCompliance(Page $beranda): void
+    private function seedCompliance(): void
     {
         Service::factory()->published()->create(['name' => 'Surat Keterangan Tidak Mampu', 'sort_order' => 1]);
         Service::factory()->published()->create(['name' => 'Rekomendasi Bantuan Sosial', 'sort_order' => 2]);
@@ -94,13 +88,11 @@ class DemoContentSeeder extends Seeder
             'file_path_s3' => $this->storeSamplePdf('sakip', 'LKjIP 2025'),
         ]);
 
-        Menu::factory()->create(['label' => 'Beranda', 'page_id' => $beranda->id, 'url' => null, 'sort_order' => 1]);
-        $profil = Menu::factory()->create(['label' => 'Profil', 'url' => '/profil', 'sort_order' => 2]);
+        // Beranda, Berita, Layanan, Informasi Publik, dan E-SAKIP sudah dibuat DefaultHomePageSeeder.
+        $profil = Menu::factory()->create(['label' => 'Profil', 'url' => '/profil', 'sort_order' => 6]);
         Menu::factory()->childOf($profil)->create(['label' => 'Visi dan Misi', 'url' => '/profil/visi-misi', 'sort_order' => 1]);
         Menu::factory()->childOf($profil)->create(['label' => 'Struktur Organisasi', 'url' => '/profil/struktur', 'sort_order' => 2]);
-        $informasi = Menu::factory()->create(['label' => 'Informasi Publik', 'url' => '/ppid', 'sort_order' => 3]);
-        Menu::factory()->childOf($informasi)->create(['label' => 'E-SAKIP', 'url' => '/sakip', 'sort_order' => 1]);
-        Menu::factory()->create(['label' => 'Pemerintah Kota', 'url' => 'https://singkawangkota.go.id', 'open_in_new_tab' => true, 'sort_order' => 4]);
+        Menu::factory()->create(['label' => 'Pemerintah Kota', 'url' => 'https://singkawangkota.go.id', 'open_in_new_tab' => true, 'sort_order' => 7]);
         Menu::factory()->create(['label' => 'Kebijakan Privasi', 'url' => '/kebijakan-privasi', 'location' => MenuLocation::Footer]);
     }
 

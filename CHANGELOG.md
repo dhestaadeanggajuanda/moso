@@ -6,6 +6,7 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ### Ditambahkan
 
+- Tampilan awal untuk setiap website dinas: `db:seed` membuat beranda terbit (Banner, Akses Cepat, Layanan Publik, Berita Terkini, Agenda Kegiatan) dan menu header dasar bila belum ada, tanpa konten contoh, dan tidak pernah menimpa susunan admin (`DefaultHomePageSeeder`). Panduan tema baru dan dampak pembaruan di `docs/DEPLOY.md`.
 - Override `docker/deploy/app/host-services.override.example.yaml`: instance dinas bisa memakai MySQL dan Redis yang terpasang di host (user MySQL dan user ACL Redis per dinas) sebagai ganti container bawaan. Panduan di `docs/DEPLOY.md`, bagian "MySQL dan Redis di host".
 - Halaman admin "Pengguna" (`/admin/users`, Super Admin) untuk mengelola akun pegawai, karena registrasi publik mati dan login SSO tidak pernah membuat akun:
     - Daftar akun dengan pencarian nama/email, saringan peran dan status, serta penanda tertaut SSO dan 2FA.
