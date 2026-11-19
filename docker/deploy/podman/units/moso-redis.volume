@@ -1,0 +1,4 @@
+# Data Redis @SLUG@ (volume Podman "systemd-moso-redis").
+[Volume]
+Label=app=moso
+Label=site=@SLUG@

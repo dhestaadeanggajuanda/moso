@@ -1,0 +1,24 @@
+# Penjadwal tugas (schedule:work) untuk @SLUG@. Image dan lingkungan sama dengan app.
+[Unit]
+Description=moso @SLUG@ - scheduler
+Requires=moso-app.service
+After=moso-app.service
+
+[Container]
+Image=@APP_IMAGE@
+ContainerName=@SLUG@-scheduler
+Pull=never
+Network=moso.network
+EnvironmentFile=%h/moso/env/app.env
+Volume=moso-logs.volume:/app/storage/logs
+Exec=php artisan schedule:work
+HealthCmd=none
+NoNewPrivileges=true
+LogDriver=journald
+LogOpt=tag=@SLUG@-scheduler
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

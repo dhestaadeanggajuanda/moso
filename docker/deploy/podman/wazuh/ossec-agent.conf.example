@@ -1,0 +1,52 @@
+<!--
+  Tambahan /var/ossec/etc/ossec.conf pada AGENT Wazuh di server yang menjalankan container moso
+  (agent berjalan sebagai root, jadi bisa membaca home user setiap website).
+  Panduan: docs/DEPLOY.md, bagian "Podman rootless dengan Quadlet".
+
+  Periksa dulu nama field journald di server Anda (perilaku bergantung versi Podman):
+    sudo machinectl shell dishub@ /usr/bin/journalctl --user -o verbose -n 3 CONTAINER_NAME=dishub-app
+  Sesuaikan filter di bawah bila field-nya berbeda.
+-->
+<ossec_config>
+
+  <!-- Log audit aplikasi: login, SSO, akun, peran, transisi artikel. Isinya tanpa token atau kata sandi. -->
+  <localfile>
+    <log_format>syslog</log_format>
+    <location>/home/*/.local/share/containers/storage/volumes/systemd-moso-logs/_data/audit-*.log</location>
+  </localfile>
+
+  <!--
+    Log container (app, worker, scheduler, ssr, mysql, redis) lewat journald.
+    Catatan: begitu ada blok journald yang memakai filter, Wazuh hanya memakai blok berfilter dan
+    mengabaikan blok journald tanpa filter. Jangan menambahkan filter di sini bila Anda mengandalkan
+    pengumpulan journald lain (mis. auth dan sshd); kumpulkan itu lewat berkas log atau blok berfilter sendiri.
+    Tanpa ignore_if_missing: entri tanpa field ini memang tidak diinginkan.
+  -->
+  <localfile>
+    <location>journald</location>
+    <log_format>journald</log_format>
+    <filter field="CONTAINER_NAME">^[a-z0-9-]+-(app|worker|scheduler|ssr|mysql|redis)$</filter>
+  </localfile>
+
+  <!-- Status unit systemd milik website (gagal start, restart, pembaruan otomatis). -->
+  <localfile>
+    <location>journald</location>
+    <log_format>journald</log_format>
+    <filter field="_SYSTEMD_USER_UNIT">^(moso-.*|podman-auto-update)\.service$</filter>
+  </localfile>
+
+  <!--
+    Integritas berkas: unit Quadlet, berkas env, dan skrip tiap website. Path dengan wildcard dipindai
+    terjadwal (bukan real-time); atur frekuensinya di blok syscheck utama bila perlu.
+    report_changes SENGAJA tidak dipakai: ia menyimpan isi berkas, sedangkan berkas env berisi rahasia.
+    Hash dan perubahan metadata tetap tercatat.
+  -->
+  <syscheck>
+    <directories check_all="yes">/home/*/.config/containers/systemd</directories>
+    <directories check_all="yes">/home/*/.config/systemd/user</directories>
+    <directories check_all="yes">/home/*/moso/env</directories>
+    <directories check_all="yes">/home/*/moso/scripts</directories>
+    <ignore>/home/*/moso/backups</ignore>
+  </syscheck>
+
+</ossec_config>

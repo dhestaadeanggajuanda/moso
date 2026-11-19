@@ -329,3 +329,161 @@ Jadi pembaruan keamanan tidak mengubah susunan halaman yang dibuat admin. Yang b
 - Port `app` (8000) dan Keycloak (8080) hanya terikat ke `127.0.0.1`; akses publik hanya lewat reverse proxy HTTPS.
 - Server SSR punya endpoint render tanpa autentikasi; jangan membuka port 13714 ke luar jaringan Docker.
 - Aktifkan OTP untuk akun admin Keycloak dan simpan `KC_ADMIN_PASSWORD` di pengelola rahasia.
+
+## 11. Podman rootless dengan Quadlet (satu user per website)
+
+Alternatif dari Docker Compose untuk server yang memakai Podman. Susunannya: **satu user Linux per website** (mis. website `dishub` dijalankan user `dishub`), dan setiap website membawa **MySQL dan Redis sendiri** sebagai container di jaringan privatnya. Container dikelola **Quadlet** (unit systemd user), sehingga naik otomatis saat reboot, dipantau `systemctl`, dan log-nya masuk journald. Berkasnya ada di `docker/deploy/podman/`.
+
+> Bagian ini belum diuji di server Podman sungguhan. Sintaks Quadlet, Wazuh, dan `podman auto-update` sudah dicocokkan dengan dokumentasi resminya, dan skrip pemasang sudah diuji pada mode render, tetapi uji dulu di server development sebelum produksi. Hal yang paling perlu diverifikasi ada di bagian "Cek pertama kali".
+
+### Mengapa susunan ini
+
+| Pilihan                         | Alasan                                                                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Rootless, satu user per website | Container tidak punya hak root di host, dan satu website tidak bisa menyentuh berkas, volume, atau container website lain.      |
+| MySQL dan Redis per website     | Data terpisah penuh, tanpa ACL Redis atau user MySQL di host, dan tanpa urusan alamat host atau subnet jaringan Podman.         |
+| Quadlet, bukan `podman-compose` | Dikelola systemd (restart, urutan start, boot), dengan health check yang ikut menentukan status unit.                           |
+| Berkas env per container        | Kata sandi database dan Redis tidak muncul di baris perintah atau berkas unit. Semua berkas env mode `0600` milik user website. |
+
+### 1. Persiapan server (sekali)
+
+```bash
+sudo apt install podman podman-docker uidmap systemd-container   # Ubuntu 24.04; sesuaikan untuk distro lain
+sudo useradd -m -s /bin/bash dishub                              # satu user per website
+sudo loginctl enable-linger dishub                               # container tetap jalan tanpa login dan naik saat reboot
+```
+
+Pastikan user punya rentang subuid/subgid (`grep dishub /etc/subuid /etc/subgid`). Masuk sebagai user itu dengan `sudo machinectl shell dishub@` (atau SSH). Jangan memakai `sudo -u dishub`, karena sesi systemd user-nya tidak ikut.
+
+### 2. Image aplikasi
+
+Penyimpanan image rootless **terpisah per user**. Bangun sekali sebagai satu user, lalu muat ke user website lain:
+
+```bash
+# sebagai user pembangun, dari root repo (beri tag versi, jangan hanya latest)
+podman build --pull --target app --build-arg VITE_THEMES=TemaModern -t localhost/moso-app:3.8.0 .
+podman build --pull --target ssr --build-arg VITE_THEMES=TemaModern -t localhost/moso-ssr:3.8.0 .
+
+# muat ke user website
+podman save localhost/moso-app:3.8.0 localhost/moso-ssr:3.8.0 | sudo machinectl shell dishub@ /usr/bin/podman load
+```
+
+Atau bangun langsung sebagai tiap user website. Tema yang dikompilasi (`VITE_THEMES`) ikut image, jadi semua website yang berbagi image berbagi daftar tema (lihat 8a).
+
+### 3. Memasang satu website
+
+Sebagai user website, dari salinan repo yang bisa dibaca (mis. `/opt/moso`):
+
+```bash
+mkdir -p ~/moso && cp /opt/moso/docker/deploy/app/.env.example ~/moso/instance.env
+chmod 600 ~/moso/instance.env && $EDITOR ~/moso/instance.env
+
+MOSO_APP_IMAGE=localhost/moso-app:3.8.0 MOSO_SSR_IMAGE=localhost/moso-ssr:3.8.0 \
+    sh /opt/moso/docker/deploy/podman/install-instance.sh dishub 8002
+```
+
+Argumen: slug, lalu port `127.0.0.1` untuk reverse proxy host (unik per website, mis. 8001, 8002). Pengaturan di `instance.env` sama dengan mode Docker, dengan perbedaan:
+
+- Isi `DB_PASSWORD`, `DB_ROOT_PASSWORD`, dan `REDIS_PASSWORD` dengan `openssl rand -hex 24` (tanpa spasi atau tanda kutip; skrip menolaknya). `DB_ROOT_PASSWORD` dipakai container MySQL dan backup, bukan aplikasi.
+- `REDIS_CLIENT=phpredis` (nama driver, bukan alamat). `REDIS_USERNAME`, `DB_HOST`, dan `HOST_*` diabaikan: aplikasi memakai `mysql` dan `redis` di jaringan website itu.
+- Tulis nilai tanpa komentar di akhir baris. Tanda kutip dan `${APP_NAME}` boleh; skrip menormalkannya untuk Podman.
+- `TRUSTED_PROXIES` harus cocok dengan alamat yang dilihat aplikasi dari reverse proxy host (lihat "Cek pertama kali").
+
+Skrip menulis `~/moso/env/*.env`, `~/moso/scripts/`, unit di `~/.config/containers/systemd/` dan `~/.config/systemd/user/`, lalu memulai layanan. Aman dijalankan ulang untuk memperbarui. Unit per website:
+
+| Unit systemd                           | Fungsi                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------ |
+| `moso-mysql`, `moso-redis`, `moso-ssr` | database, sesi/cache/antrean, render SSR (alias `mysql`, `redis`, `ssr`) |
+| `moso-app`                             | aplikasi web, menjalankan migrasi saat start; port `127.0.0.1:<port>`    |
+| `moso-worker`, `moso-scheduler`        | antrean dan penjadwal; menunggu `moso-app` sehat                         |
+| `moso-backup.timer`                    | backup MySQL harian 02:15                                                |
+| `podman-auto-update.timer`             | pembaruan mysql dan redis mingguan, hari Minggu 03:30                    |
+
+Kelola dari host sebagai root atau dari sesi user:
+
+```bash
+sudo machinectl shell dishub@ /usr/bin/systemctl --user status moso-app moso-mysql moso-redis moso-ssr
+sudo machinectl shell dishub@ /usr/bin/journalctl --user -u moso-app -f
+```
+
+Reverse proxy host (Nginx, aaPanel) meneruskan HTTPS website ke `127.0.0.1:<port>`, sama seperti mode Docker.
+
+### 4. Cadangan dan manajemen database
+
+Backup berjalan sebagai user website lewat `podman exec`, tanpa membuka port database. Hasilnya `~/moso/backups/<slug>-<waktu>.sql.gz`, disimpan 14 hari (`MOSO_BACKUP_KEEP_DAYS`), dan dibuang bila `mysqldump` terputus. Root host bisa menyalin semua backup dari `/home/*/moso/backups`.
+
+```bash
+# backup manual, dan pulihkan (untuk pemulihan, hentikan app dulu)
+sudo machinectl shell dishub@ ~/moso/scripts/backup-mysql.sh dishub
+zcat ~/moso/backups/dishub-20261120-021500.sql.gz | podman exec -i dishub-mysql sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
+```
+
+Untuk DBeaver atau alat lain, buka port hanya ke loopback lewat drop-in, lalu akses dengan SSH tunnel:
+
+```bash
+mkdir -p ~/.config/containers/systemd/moso-mysql.container.d
+printf '[Container]\nPublishPort=127.0.0.1:33062:3306\n' > ~/.config/containers/systemd/moso-mysql.container.d/10-port.conf
+systemctl --user daemon-reload && systemctl --user restart moso-mysql
+```
+
+Pakai port yang berbeda untuk tiap website. Volume ada di `~/.local/share/containers/storage/volumes/` (`systemd-moso-mysql`, `systemd-moso-redis`, `systemd-moso-logs`); masukkan ke rencana backup disk bila perlu.
+
+### 5. Pembaruan dan patching
+
+| Yang diperbarui                                   | Cara                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mysql:8.4` dan `redis:8.8-alpine` (patch)        | **Otomatis** oleh `podman-auto-update` tiap minggu (`AutoUpdate=registry`). Sebelumnya backup dijalankan; bila backup gagal, pembaruan dibatalkan. Bila container baru tidak sehat (unit menunggu health check lewat `Notify=healthy`), Podman mengembalikan versi lama. |
+| Image aplikasi dan SSR (kode moso, base PHP/Node) | **Sengaja manual.** Pembaruan otomatis bisa mengubah tampilan semua website sekaligus. Bangun ulang berkala dengan `--pull` agar patch base image ikut, beri tag versi baru, lalu pasang.                                                                                |
+| Paket host (podman, systemd, kernel)              | `unattended-upgrades` atau jadwal patch OS Anda; Wazuh Vulnerability Detection melaporkan paket yang rentan.                                                                                                                                                             |
+
+Memperbarui aplikasi satu website:
+
+```bash
+# muat image bertag baru ke user website, lalu pasang ulang (menulis ulang unit dan memulai ulang layanan)
+MOSO_APP_IMAGE=localhost/moso-app:3.9.0 MOSO_SSR_IMAGE=localhost/moso-ssr:3.9.0 \
+    sh /opt/moso/docker/deploy/podman/install-instance.sh dishub 8002
+```
+
+Untuk uji bertahap, pasang tag baru ke satu website dulu dan biarkan yang lain di tag lama. Rollback: jalankan lagi dengan tag lama (migrasi yang sudah berjalan tidak ikut dibatalkan, jadi backup dulu).
+
+Mengapa tidak Diun: Diun hanya memberi notifikasi dan tidak memperbarui apa pun. Untuk mysql dan redis, `podman auto-update` sudah memperbarui dengan rollback. Diun berguna bila Anda ingin pemberitahuan tentang base image aplikasi, tetapi itu tambahan, bukan pengganti. Periksa status dan simulasi:
+
+```bash
+systemctl --user list-timers podman-auto-update.timer moso-backup.timer
+podman auto-update --dry-run
+```
+
+### 6. Wazuh agent
+
+Agent dipasang di host (sebagai root) dan membaca home semua user website. Berkas di `docker/deploy/podman/wazuh/`:
+
+| Berkas                     | Dipasang di          | Isi                                                                                                                        |
+| -------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `ossec-agent.conf.example` | agent (`ossec.conf`) | log audit aplikasi, log container dan status unit dari journald, integritas berkas unit, env, dan skrip (tanpa isi berkas) |
+| `moso-decoders.xml`        | manager              | membaca baris log audit moso menjadi field `event` dan `srcip`                                                             |
+| `moso-rules.xml`           | manager              | login gagal berulang, lockout, SSO ditolak, 2FA dimatikan, perubahan akun dan tautan SSO, perubahan alur penerbitan        |
+
+Urutan aman:
+
+1. Di manager, salin decoder ke `/var/ossec/etc/decoders/` dan aturan ke `/var/ossec/etc/rules/`.
+2. **Uji dengan `/var/ossec/bin/wazuh-logtest`** sebelum restart manager, karena berkas yang salah membuat `analysisd` gagal start. Contoh baris: `[2026-11-20 10:24:54] production.INFO: auth.failed {"user_id":null,"guard":"web","ip":"203.0.113.9"}` harus memicu aturan 100701.
+3. Restart manager, lalu tambahkan isi `ossec-agent.conf.example` ke `ossec.conf` agent dan restart agent.
+4. Periksa di dashboard bahwa event dari `/home/*/.local/share/containers/storage/volumes/systemd-moso-logs/_data/audit-*.log` masuk.
+
+Catatan penting:
+
+- `report_changes` sengaja tidak dipakai di pemantauan berkas env: opsi itu menyimpan isi berkas, termasuk rahasia, ke Wazuh. Hash dan metadata tetap tercatat.
+- Path dengan wildcard di `syscheck` dipindai terjadwal, bukan real-time.
+- Begitu ada blok journald berfilter, Wazuh hanya memakai blok berfilter. Jangan sampai ini menutup pengumpulan journald lain yang Anda andalkan.
+- Id aturan 100700 sampai 100799; ubah bila bentrok.
+- Wazuh tidak memindai kerentanan di dalam image container. Untuk itu tambahkan pemindai image (mis. Trivy) pada proses build.
+
+### Cek pertama kali
+
+1. **IP klien di aplikasi.** Login sekali lewat reverse proxy, lalu lihat `ip` di baris audit `auth.login`: harus IP klien asli. Bila yang tampil alamat internal Podman, isi `TRUSTED_PROXIES` dengan alamat yang dilihat aplikasi, lalu jalankan ulang pemasang. Karena port hanya terikat ke `127.0.0.1`, `TRUSTED_PROXIES=*` dapat diterima di susunan ini.
+2. **Boot.** Reboot server dan pastikan semua unit naik tanpa ada yang login (`loginctl show-user dishub -p Linger` harus `yes`).
+3. **Health check.** `podman healthcheck run dishub-app` dan `dishub-mysql` harus berhasil, dan `systemctl --user status moso-app` harus `active (running)` setelah migrasi.
+4. **Field journald.** Cocokkan nama field di `ossec-agent.conf.example` dengan keluaran `journalctl --user -o verbose` untuk container Anda.
+5. **Izin berkas.** `ls -l ~/moso/env` harus `-rw-------`.
+6. **Pembaruan otomatis.** `podman auto-update --dry-run` tidak boleh menampilkan galat, dan backup harus terbentuk sebelum pembaruan sungguhan.
+7. **Hardening opsional (uji dulu).** Setelah semuanya stabil, tambahkan `DropCapability=ALL` lewat drop-in ke `moso-app`, `moso-worker`, `moso-scheduler`, dan `moso-ssr`. Image aplikasi sudah dibuat agar jalan tanpa capability, tetapi hasilnya belum diuji di server.

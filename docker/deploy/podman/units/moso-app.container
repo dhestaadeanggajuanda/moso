@@ -1,0 +1,36 @@
+# Aplikasi web moso (Octane/FrankenPHP) untuk @SLUG@. Satu-satunya container yang menjalankan
+# migrasi (RUN_MIGRATIONS). Port hanya di 127.0.0.1: reverse proxy host meneruskan HTTPS ke sini.
+[Unit]
+Description=moso @SLUG@ - aplikasi web
+Requires=moso-mysql.service moso-redis.service moso-ssr.service
+After=moso-mysql.service moso-redis.service moso-ssr.service
+
+[Container]
+Image=@APP_IMAGE@
+ContainerName=@SLUG@-app
+Pull=never
+Network=moso.network
+NetworkAlias=app
+PublishPort=127.0.0.1:@APP_PORT@:8000
+EnvironmentFile=%h/moso/env/app.env
+Environment=RUN_MIGRATIONS=true
+Volume=moso-logs.volume:/app/storage/logs
+Volume=%h/moso/scripts/healthcheck-app.php:/usr/local/bin/moso-healthcheck.php:ro,Z
+# Header Host = host APP_URL: TrustHosts menolak host lain (termasuk 127.0.0.1) dengan 400.
+HealthCmd=php /usr/local/bin/moso-healthcheck.php
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=3
+HealthStartPeriod=90s
+Notify=healthy
+NoNewPrivileges=true
+LogDriver=journald
+LogOpt=tag=@SLUG@-app
+
+[Service]
+Restart=always
+# Migrasi database berjalan saat start pertama setelah pembaruan.
+TimeoutStartSec=600
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,24 @@
+<!--
+  Decoder log audit aplikasi moso, dipasang di MANAGER Wazuh:
+    /var/ossec/etc/decoders/moso-decoders.xml
+  Contoh baris:
+    [2026-10-19 10:24:54] production.INFO: sso.failed {"reason":"state_mismatch","ip":"203.0.113.9"}
+  WAJIB diuji dengan /var/ossec/bin/wazuh-logtest sebelum restart manager (lihat docs/DEPLOY.md).
+-->
+<decoder name="moso-audit">
+  <prematch type="pcre2">^\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] \w+\.INFO: (?:auth|sso|user|article|settings|agentic)\.</prematch>
+</decoder>
+
+<!-- Bentuk dengan IP klien (hampir semua event). -->
+<decoder name="moso-audit-ip">
+  <parent>moso-audit</parent>
+  <regex type="pcre2">INFO: ([a-z_.]+) .*"ip":"([^"]+)"</regex>
+  <order>event,srcip</order>
+</decoder>
+
+<!-- Cadangan: event tanpa IP (mis. dari konsol artisan). -->
+<decoder name="moso-audit-noip">
+  <parent>moso-audit</parent>
+  <regex type="pcre2">INFO: ([a-z_.]+)</regex>
+  <order>event</order>
+</decoder>

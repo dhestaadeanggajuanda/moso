@@ -1,0 +1,5 @@
+# Jaringan privat satu website (@SLUG@). Quadlet membuat jaringan Podman "systemd-moso"
+# dan service moso-network.service. DNS-nya memungkinkan alias mysql, redis, ssr, dan app.
+[Network]
+Label=app=moso
+Label=site=@SLUG@

@@ -1,0 +1,9 @@
+# Backup database @SLUG@ (unit user systemd, dipicu moso-backup.timer).
+[Unit]
+Description=moso @SLUG@ - backup MySQL
+Requires=moso-mysql.service
+After=moso-mysql.service
+
+[Service]
+Type=oneshot
+ExecStart=%h/moso/scripts/backup-mysql.sh @SLUG@

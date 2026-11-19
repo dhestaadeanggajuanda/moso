@@ -1,0 +1,35 @@
+# Redis website @SLUG@ untuk sesi, cache, dan antrean (AOF aktif, kata sandi dari env).
+# moso-redis-start dan moso-healthcheck adalah skrip kecil yang dipasang install-instance.sh,
+# supaya kata sandi dibaca dari environment container, bukan ditulis di baris perintah.
+[Unit]
+Description=moso @SLUG@ - Redis
+After=moso-network.service
+Wants=moso-network.service
+
+[Container]
+Image=docker.io/library/redis:8.8-alpine
+ContainerName=@SLUG@-redis
+AutoUpdate=registry
+Network=moso.network
+NetworkAlias=redis
+Volume=moso-redis.volume:/data
+Volume=%h/moso/scripts/redis-start.sh:/usr/local/bin/moso-redis-start:ro,Z
+Volume=%h/moso/scripts/healthcheck-redis.sh:/usr/local/bin/moso-healthcheck:ro,Z
+EnvironmentFile=%h/moso/env/redis.env
+Exec=/usr/local/bin/moso-redis-start
+HealthCmd=/usr/local/bin/moso-healthcheck
+HealthInterval=10s
+HealthTimeout=5s
+HealthRetries=10
+HealthStartPeriod=10s
+Notify=healthy
+NoNewPrivileges=true
+LogDriver=journald
+LogOpt=tag=@SLUG@-redis
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

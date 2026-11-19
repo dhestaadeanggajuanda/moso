@@ -1,0 +1,77 @@
+<!--
+  Aturan log audit aplikasi moso, dipasang di MANAGER Wazuh:
+    /var/ossec/etc/rules/moso-rules.xml
+  Id 100700 sampai 100799; ubah bila bentrok dengan aturan khusus Anda yang lain.
+  WAJIB diuji dengan /var/ossec/bin/wazuh-logtest sebelum restart manager: berkas aturan yang
+  salah membuat analysisd gagal start.
+-->
+<group name="moso,audit,">
+
+  <rule id="100700" level="3">
+    <decoded_as>moso-audit</decoded_as>
+    <description>moso: event audit $(event)</description>
+  </rule>
+
+  <rule id="100701" level="5">
+    <if_sid>100700</if_sid>
+    <field name="event">^auth\.failed$</field>
+    <description>moso: login gagal dari $(srcip)</description>
+    <group>authentication_failed,</group>
+  </rule>
+
+  <rule id="100702" level="10" frequency="6" timeframe="120">
+    <if_matched_sid>100701</if_matched_sid>
+    <same_source_ip />
+    <description>moso: banyak login gagal dari $(srcip), kemungkinan tebak kata sandi</description>
+    <group>authentication_failures,</group>
+  </rule>
+
+  <rule id="100703" level="8">
+    <if_sid>100700</if_sid>
+    <field name="event">^auth\.lockout$</field>
+    <description>moso: login dikunci karena terlalu banyak percobaan dari $(srcip)</description>
+    <group>authentication_failures,</group>
+  </rule>
+
+  <rule id="100704" level="6">
+    <if_sid>100700</if_sid>
+    <field name="event">^sso\.failed$</field>
+    <description>moso: login SSO ditolak dari $(srcip)</description>
+    <group>authentication_failed,</group>
+  </rule>
+
+  <rule id="100705" level="10" frequency="6" timeframe="120">
+    <if_matched_sid>100704</if_matched_sid>
+    <same_source_ip />
+    <description>moso: banyak login SSO ditolak dari $(srcip)</description>
+    <group>authentication_failures,</group>
+  </rule>
+
+  <rule id="100706" level="10">
+    <if_sid>100700</if_sid>
+    <field name="event">^auth\.two_factor_disabled$</field>
+    <description>moso: 2FA dimatikan pada sebuah akun</description>
+    <group>account_changed,</group>
+  </rule>
+
+  <rule id="100707" level="8">
+    <if_sid>100700</if_sid>
+    <field name="event">^user\.(created|deactivated|activated|updated)$</field>
+    <description>moso: akun pegawai diubah ($(event))</description>
+    <group>account_changed,</group>
+  </rule>
+
+  <rule id="100708" level="8">
+    <if_sid>100700</if_sid>
+    <field name="event">^sso\.(linked|unlinked)$</field>
+    <description>moso: tautan SSO akun diubah ($(event))</description>
+    <group>account_changed,</group>
+  </rule>
+
+  <rule id="100709" level="6">
+    <if_sid>100700</if_sid>
+    <field name="event">^settings\.article_workflow_changed$</field>
+    <description>moso: alur penerbitan artikel diganti</description>
+  </rule>
+
+</group>

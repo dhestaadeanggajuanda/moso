@@ -1,0 +1,22 @@
+# Render sisi server (SSR) untuk halaman publik @SLUG@. Tidak dibuka ke luar: hanya app yang
+# memanggilnya lewat alias "ssr" di jaringan website ini.
+[Unit]
+Description=moso @SLUG@ - SSR
+After=moso-network.service
+Wants=moso-network.service
+
+[Container]
+Image=@SSR_IMAGE@
+ContainerName=@SLUG@-ssr
+Pull=never
+Network=moso.network
+NetworkAlias=ssr
+NoNewPrivileges=true
+LogDriver=journald
+LogOpt=tag=@SLUG@-ssr
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

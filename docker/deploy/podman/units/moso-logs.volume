@@ -1,0 +1,5 @@
+# Log aplikasi dan log audit @SLUG@ (volume Podman "systemd-moso-logs"), dipakai bersama
+# app, worker, dan scheduler. Wazuh membaca audit-*.log dari volume ini.
+[Volume]
+Label=app=moso
+Label=site=@SLUG@

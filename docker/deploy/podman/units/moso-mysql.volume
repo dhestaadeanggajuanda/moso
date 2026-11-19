@@ -1,0 +1,4 @@
+# Data MySQL @SLUG@ (volume Podman "systemd-moso-mysql").
+[Volume]
+Label=app=moso
+Label=site=@SLUG@

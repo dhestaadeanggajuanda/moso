@@ -1,0 +1,25 @@
+# Pekerja antrean (queue:work) untuk @SLUG@. Image dan lingkungan sama dengan app.
+[Unit]
+Description=moso @SLUG@ - queue worker
+Requires=moso-app.service
+After=moso-app.service
+
+[Container]
+Image=@APP_IMAGE@
+ContainerName=@SLUG@-worker
+Pull=never
+Network=moso.network
+EnvironmentFile=%h/moso/env/app.env
+Volume=moso-logs.volume:/app/storage/logs
+Exec=php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+# HEALTHCHECK bawaan image memeriksa server web; container ini tidak menjalankannya.
+HealthCmd=none
+NoNewPrivileges=true
+LogDriver=journald
+LogOpt=tag=@SLUG@-worker
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
