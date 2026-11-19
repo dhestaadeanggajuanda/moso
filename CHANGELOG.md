@@ -10,6 +10,13 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 - `tests/Feature/Site/ThemeContractTest.php`: setiap tema wajib punya komponen untuk semua blok Page Builder, layout dan tampilan yang sama dengan TemaModern, stylesheet, alias font, dan tidak mengimpor dari tema lain; pemilihan tema situs dan halaman diuji.
 - Deploy dengan Podman rootless dan Quadlet, satu user Linux per website (`docker/deploy/podman/`, `docs/DEPLOY.md` bagian 11): unit systemd per website (app, worker, scheduler, SSR, MySQL, Redis), pemasang `install-instance.sh`, backup MySQL harian, pembaruan otomatis patch mysql dan redis dengan backup lebih dulu dan rollback, serta konfigurasi Wazuh (agent, decoder, dan aturan log audit). Belum diuji di server Podman sungguhan.
 
+### Keamanan
+
+- Dependensi dinaikkan agar `composer audit` dan `npm audit` kembali bersih (langkah Audit Dependencies di CI gagal karena advisory baru):
+    - `laravel/framework` v13.37.0 → v13.43.0 (advisory "Task Output Injection" pada Concurrency Process, dibenahi sejak 13.40.0; rilis ini juga memperketat URL bertanda tangan, aturan validasi `not_regex`, `unique`/`exists`, dan validasi file).
+    - Paket Symfony 7.4.x naik ke 7.4.22/7.4.23, termasuk `symfony/html-sanitizer` (tiga advisory, dipakai penyanitasi isi artikel), `http-foundation`, `http-kernel`, `routing`, `serializer`, `filesystem`, `yaml`, dan `mime`, beserta dependensi transitifnya (versi minor/patch saja; `nesbot/carbon` ditahan di 3.14.2 agar tidak menambah paket `symfony/polyfill-time`).
+    - `happy-dom` (dependensi uji `packages/a11y-widget`) 20.14.5 → 21.0.4. Hanya 21.0.4 yang bebas dari ketiga advisory (GHSA-834v-8h66-3h79 mencakup seluruh 17.0.0–21.0.3), jadi lompatan major tidak terhindarkan; paket ini hanya dipakai saat pengujian widget.
+
 ## [3.8.0] - 2026-10-22
 
 Penerbitan semudah WordPress (alur Sederhana, peran Penulis, tanggal terbit lampau, halaman teks), kelola pengguna, tampilan awal website, opsi MySQL dan Redis di host, dan asisten penulis berita. Asisten: draf berita atau liputan kegiatan disusun oleh layanan pusat moso-agentic dari judul, foto, dan deskripsi pendek. Fitur ini mati sampai `AGENTIC_ENABLED=true`.
