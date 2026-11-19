@@ -4,6 +4,11 @@ Semua perubahan penting proyek ini dicatat di sini. Format mengikuti [Keep a Cha
 
 ## [Unreleased]
 
+### Ditambahkan
+
+- Tema **TemaModern2** (`resources/js/Themes/TemaModern2`): tema kedua dengan dunia visual baru, "permukaan aplikasi hangat": latar pasir, kartu putih bersudut besar dengan bayangan hangat, satu warna aksi teal yang hanya dipakai elemen yang bisa ditekan, huruf Nunito Sans (self-host, alias `nunito` di `vite.config.ts` dan `config/themes.php`), bilah navigasi bawah di ponsel (Beranda, Layanan, Berita, Kontak dari `site.links`) dan header atas di layar lebar. Semua 8 blok Page Builder, layout, 6 tampilan, dan partial dibangun ulang dengan kontrak `<script setup>` yang sama; badge sumber tetap ikon plus teks, dan widget "Hentikan animasi" ikut berlaku. `TemaModern` tetap tema bawaan dan tidak berubah, sehingga tampilan website yang sudah berjalan tidak ikut berubah; website pindah hanya bila admin memilih TemaModern2. Image bawaan (`Dockerfile`, compose, dan `.env.example`) kini mengompilasi `TemaModern,TemaModern2`.
+- `tests/Feature/Site/ThemeContractTest.php`: setiap tema wajib punya komponen untuk semua blok Page Builder, layout dan tampilan yang sama dengan TemaModern, stylesheet, alias font, dan tidak mengimpor dari tema lain; pemilihan tema situs dan halaman diuji.
+
 ## [3.8.0] - 2026-10-22
 
 Penerbitan semudah WordPress (alur Sederhana, peran Penulis, tanggal terbit lampau, halaman teks), kelola pengguna, tampilan awal website, opsi MySQL dan Redis di host, dan asisten penulis berita. Asisten: draf berita atau liputan kegiatan disusun oleh layanan pusat moso-agentic dari judul, foto, dan deskripsi pendek. Fitur ini mati sampai `AGENTIC_ENABLED=true`.

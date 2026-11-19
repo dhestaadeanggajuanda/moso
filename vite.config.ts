@@ -45,6 +45,13 @@ export default defineConfig({
                     preload: [{ weight: 400 }, { weight: 700 }],
                     fallbacks: ['system-ui', 'sans-serif'],
                 }),
+                // TemaModern2.
+                bunny('Nunito Sans', {
+                    alias: 'nunito',
+                    weights: [400, 600, 700, 800],
+                    preload: [{ weight: 400 }, { weight: 800 }],
+                    fallbacks: ['system-ui', 'sans-serif'],
+                }),
             ],
         }),
         inertia(),

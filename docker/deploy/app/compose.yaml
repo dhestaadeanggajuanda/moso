@@ -41,7 +41,7 @@ services:
             context: ../../..
             target: app
             args:
-                VITE_THEMES: ${VITE_THEMES:-TemaModern}
+                VITE_THEMES: ${VITE_THEMES:-TemaModern,TemaModern2}
                 VITE_APP_NAME: ${APP_NAME:-Portal Dinas}
         environment:
             <<: *app-environment
@@ -96,7 +96,7 @@ services:
             context: ../../..
             target: ssr
             args:
-                VITE_THEMES: ${VITE_THEMES:-TemaModern}
+                VITE_THEMES: ${VITE_THEMES:-TemaModern,TemaModern2}
                 VITE_APP_NAME: ${APP_NAME:-Portal Dinas}
         restart: unless-stopped
 

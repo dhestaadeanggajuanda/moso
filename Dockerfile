@@ -64,7 +64,7 @@ COPY . .
 RUN composer dump-autoload --optimize
 
 # Tema yang dikompilasi dan nama aplikasi di bundle ditentukan saat build.
-ARG VITE_THEMES=TemaModern
+ARG VITE_THEMES=TemaModern,TemaModern2
 ARG VITE_APP_NAME="Portal Dinas"
 ENV VITE_THEMES=${VITE_THEMES} \
     VITE_APP_NAME=${VITE_APP_NAME}

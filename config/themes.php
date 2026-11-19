@@ -28,6 +28,7 @@ return [
     */
     'fonts' => [
         'TemaModern' => ['jakarta'],
+        'TemaModern2' => ['nunito'],
     ],
 
 ];

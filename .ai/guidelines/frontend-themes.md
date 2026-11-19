@@ -25,7 +25,8 @@
 
 ## Desain
 
-- Gunakan skill `impeccable` untuk merancang dan mengaudit tema publik (`/impeccable craft`, `adapt`, `audit`, `polish`). Konteks produk ada di `PRODUCT.md`, sistem desain di `DESIGN.md`, dan aturan kerja tim magang di `docs/SOP-FRONTEND.md`.
+- Gunakan skill `impeccable` untuk merancang dan mengaudit tema publik (`/impeccable craft`, `adapt`, `audit`, `polish`). Konteks produk ada di `PRODUCT.md`, sistem desain di `DESIGN.md` (TemaModern) dan `resources/js/Themes/TemaModern2/DESIGN.md` (TemaModern2), dan aturan kerja tim magang di `docs/SOP-FRONTEND.md`.
+- Tema yang sudah dirilis (`TemaModern`) tidak diedit untuk perubahan desain, karena kodenya ada di image dan mengubah tampilan semua website yang memakainya. Perubahan desain dikerjakan di tema berikutnya (`TemaModern2`); hanya bug dan keamanan yang boleh masuk ke tema yang sudah dirilis. Jangan menghapus tema atau mengubah urutan `VITE_THEMES` selama masih dipakai. `ThemeContractTest` menjaga kelengkapan tiap tema.
 - Karusel yang sudah ada (`HeroSlider`, `NewsCarousel`) menjadi acuan pola: tombol 44px berlabel, tombol jeda bila bergeser otomatis, berhenti saat fokus/hover, tidak bergerak saat `prefers-reduced-motion`, dan slide tidak aktif dibuat `inert`.
 - Token desain (warna, font, radius) didefinisikan sekali di `Themes/{Tema}/theme.css` lewat `@theme` Tailwind 4. Jangan hardcode warna hex di komponen.
 - Font di-self-host lewat opsi `fonts` laravel-vite-plugin (diunduh saat build), tanpa CDN font saat runtime.

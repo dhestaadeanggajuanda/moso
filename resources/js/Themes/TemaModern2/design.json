@@ -1,0 +1,352 @@
+{
+    "schemaVersion": 2,
+    "generatedAt": "2026-11-19T00:00:00Z",
+    "title": "Design System: TemaModern2",
+    "extensions": {
+        "colorMeta": {
+            "ground": {
+                "role": "neutral",
+                "displayName": "Pasir",
+                "canonical": "oklch(0.968 0.019 84)",
+                "tonalRamp": [
+                    "oklch(0.25 0.02 84)",
+                    "oklch(0.38 0.03 84)",
+                    "oklch(0.52 0.04 84)",
+                    "oklch(0.66 0.05 84)",
+                    "oklch(0.78 0.05 84)",
+                    "oklch(0.88 0.035 84)",
+                    "oklch(0.935 0.03 82)",
+                    "oklch(0.968 0.019 84)"
+                ]
+            },
+            "ground-deep": {
+                "role": "neutral",
+                "displayName": "Pasir Dalam",
+                "canonical": "oklch(0.935 0.03 82)",
+                "tonalRamp": [
+                    "oklch(0.25 0.02 82)",
+                    "oklch(0.38 0.03 82)",
+                    "oklch(0.52 0.04 82)",
+                    "oklch(0.66 0.05 82)",
+                    "oklch(0.78 0.05 82)",
+                    "oklch(0.86 0.04 82)",
+                    "oklch(0.91 0.035 82)",
+                    "oklch(0.935 0.03 82)"
+                ]
+            },
+            "card": {
+                "role": "neutral",
+                "displayName": "Kartu Putih",
+                "canonical": "oklch(1 0 0)",
+                "tonalRamp": [
+                    "oklch(0.25 0 0)",
+                    "oklch(0.38 0 0)",
+                    "oklch(0.52 0 0)",
+                    "oklch(0.66 0 0)",
+                    "oklch(0.78 0 0)",
+                    "oklch(0.88 0 0)",
+                    "oklch(0.95 0 0)",
+                    "oklch(1 0 0)"
+                ]
+            },
+            "ink": {
+                "role": "neutral",
+                "displayName": "Tinta Hangat",
+                "canonical": "oklch(0.26 0.014 75)",
+                "tonalRamp": [
+                    "oklch(0.15 0.01 75)",
+                    "oklch(0.26 0.014 75)",
+                    "oklch(0.38 0.018 75)",
+                    "oklch(0.5 0.02 76)",
+                    "oklch(0.62 0.022 77)",
+                    "oklch(0.74 0.022 78)",
+                    "oklch(0.85 0.02 80)",
+                    "oklch(0.94 0.015 82)"
+                ]
+            },
+            "ink-muted": {
+                "role": "neutral",
+                "displayName": "Tinta Redup",
+                "canonical": "oklch(0.46 0.022 78)",
+                "tonalRamp": [
+                    "oklch(0.2 0.015 78)",
+                    "oklch(0.3 0.018 78)",
+                    "oklch(0.38 0.02 78)",
+                    "oklch(0.46 0.022 78)",
+                    "oklch(0.58 0.024 78)",
+                    "oklch(0.7 0.024 79)",
+                    "oklch(0.82 0.022 80)",
+                    "oklch(0.93 0.016 82)"
+                ]
+            },
+            "edge": {
+                "role": "neutral",
+                "displayName": "Tepi",
+                "canonical": "oklch(0.6 0.03 80)",
+                "tonalRamp": [
+                    "oklch(0.25 0.02 80)",
+                    "oklch(0.35 0.025 80)",
+                    "oklch(0.45 0.03 80)",
+                    "oklch(0.6 0.03 80)",
+                    "oklch(0.7 0.03 80)",
+                    "oklch(0.8 0.028 81)",
+                    "oklch(0.89 0.024 82)",
+                    "oklch(0.95 0.016 82)"
+                ]
+            },
+            "line": {
+                "role": "neutral",
+                "displayName": "Garis",
+                "canonical": "oklch(0.92 0.02 82)",
+                "tonalRamp": [
+                    "oklch(0.4 0.03 82)",
+                    "oklch(0.52 0.035 82)",
+                    "oklch(0.64 0.035 82)",
+                    "oklch(0.75 0.032 82)",
+                    "oklch(0.84 0.028 82)",
+                    "oklch(0.92 0.02 82)",
+                    "oklch(0.96 0.014 82)",
+                    "oklch(0.985 0.008 82)"
+                ]
+            },
+            "action": {
+                "role": "primary",
+                "displayName": "Teal Laut",
+                "canonical": "oklch(0.47 0.088 191)",
+                "tonalRamp": [
+                    "oklch(0.33 0.07 192)",
+                    "oklch(0.4 0.08 192)",
+                    "oklch(0.47 0.088 191)",
+                    "oklch(0.62 0.09 190)",
+                    "oklch(0.75 0.08 189)",
+                    "oklch(0.87 0.065 188)",
+                    "oklch(0.93 0.04 188)",
+                    "oklch(0.965 0.02 188)"
+                ]
+            },
+            "action-hover": {
+                "role": "primary",
+                "displayName": "Teal Dalam",
+                "canonical": "oklch(0.4 0.08 192)",
+                "tonalRamp": [
+                    "oklch(0.25 0.05 192)",
+                    "oklch(0.33 0.07 192)",
+                    "oklch(0.4 0.08 192)",
+                    "oklch(0.47 0.088 191)",
+                    "oklch(0.62 0.09 190)",
+                    "oklch(0.75 0.08 189)",
+                    "oklch(0.87 0.065 188)",
+                    "oklch(0.93 0.04 188)"
+                ]
+            },
+            "clay": {
+                "role": "secondary",
+                "displayName": "Tanah Liat",
+                "canonical": "oklch(0.45 0.11 48)",
+                "tonalRamp": [
+                    "oklch(0.28 0.07 48)",
+                    "oklch(0.36 0.09 48)",
+                    "oklch(0.45 0.11 48)",
+                    "oklch(0.6 0.12 50)",
+                    "oklch(0.74 0.1 55)",
+                    "oklch(0.86 0.065 62)",
+                    "oklch(0.945 0.035 70)",
+                    "oklch(0.975 0.015 72)"
+                ]
+            },
+            "ok": {
+                "role": "tertiary",
+                "displayName": "Hijau Status",
+                "canonical": "oklch(0.45 0.1 155)",
+                "tonalRamp": [
+                    "oklch(0.28 0.06 155)",
+                    "oklch(0.36 0.08 155)",
+                    "oklch(0.45 0.1 155)",
+                    "oklch(0.6 0.11 155)",
+                    "oklch(0.74 0.09 155)",
+                    "oklch(0.86 0.06 155)",
+                    "oklch(0.955 0.04 155)",
+                    "oklch(0.98 0.015 155)"
+                ]
+            }
+        },
+        "typographyMeta": {
+            "display": {
+                "displayName": "Display",
+                "purpose": "Judul sapaan hero beranda; bobot 800, 1.875rem di ponsel naik ke 3rem."
+            },
+            "headline": {
+                "displayName": "Headline",
+                "purpose": "Judul h1 kepala halaman daftar; 1.875rem naik ke 3rem di layar lebar."
+            },
+            "title": {
+                "displayName": "Title",
+                "purpose": "Judul kartu layanan dan berita; 1.125rem bobot 800."
+            },
+            "body": {
+                "displayName": "Body",
+                "purpose": "Teks kartu dan isi artikel; isi artikel 1.0625rem, jarak baris 1.75, maksimum 70ch."
+            },
+            "label": {
+                "displayName": "Label",
+                "purpose": "Badge, tab bawah, strip situs resmi; 0.75rem sampai 0.875rem bobot 700."
+            }
+        },
+        "shadows": [
+            {
+                "name": "card",
+                "value": "0 6px 18px -8px oklch(0.3 0.05 70 / 0.22)",
+                "purpose": "Kartu putih saat diam."
+            },
+            {
+                "name": "lift",
+                "value": "0 14px 28px -12px oklch(0.3 0.05 70 / 0.32)",
+                "purpose": "Kartu saat hover dan dropdown menu."
+            },
+            {
+                "name": "chip",
+                "value": "0 2px 8px -4px oklch(0.3 0.05 70 / 0.3)",
+                "purpose": "Tombol senyap, tombol Menu, item menu aktif."
+            },
+            {
+                "name": "bar",
+                "value": "0 -6px 18px -8px oklch(0.3 0.05 70 / 0.22)",
+                "purpose": "Bilah tab bawah di ponsel (bayangan ke atas)."
+            }
+        ],
+        "motion": [
+            {
+                "name": "ease-soft",
+                "value": "cubic-bezier(0.2, 0.9, 0.3, 1)",
+                "purpose": "Pegas tekan: transform 220ms, mengendap cepat tanpa pantulan. Satu-satunya gerak yang dirancang."
+            },
+            {
+                "name": "ease-out-expo",
+                "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+                "purpose": "Pergeseran panah tautan saat hover (300ms)."
+            },
+            {
+                "name": "press-scale",
+                "value": "scale(0.97)",
+                "purpose": "Skala saat elemen bertanda press ditekan."
+            }
+        ],
+        "breakpoints": [
+            { "name": "sm", "value": "640px" },
+            { "name": "md", "value": "768px" },
+            { "name": "lg", "value": "1024px" },
+            { "name": "xl", "value": "1280px" }
+        ]
+    },
+    "components": [
+        {
+            "name": "Tombol Aksi",
+            "kind": "button",
+            "refersTo": "button-action",
+            "description": "Aksi utama: pil teal, teks putih. Satu per tampilan.",
+            "html": "<button class=\"ds-btn-action\">Cari layanan</button>",
+            "css": ".ds-btn-action { display: inline-flex; min-height: 3rem; align-items: center; justify-content: center; gap: 0.5rem; border: 0; border-radius: 999px; background: oklch(0.47 0.088 191); padding: 0 1.5rem; font: 800 1rem 'Nunito Sans', system-ui, sans-serif; color: oklch(1 0 0); cursor: pointer; transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), background-color 150ms ease-out; } .ds-btn-action:hover { background: oklch(0.4 0.08 192); } .ds-btn-action:active { transform: scale(0.97); } .ds-btn-action:focus-visible { outline: 3px solid oklch(0.26 0.014 75); outline-offset: 2px; box-shadow: 0 0 0 2px oklch(1 0 0); }"
+        },
+        {
+            "name": "Tombol Senyap",
+            "kind": "button",
+            "refersTo": "button-quiet",
+            "description": "Aksi kedua: pil putih dengan teks teal dan bayangan chip.",
+            "html": "<a class=\"ds-btn-quiet\" href=\"#\">Cari layanan</a>",
+            "css": ".ds-btn-quiet { display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: 0.5rem; border-radius: 999px; background: oklch(1 0 0); padding: 0 1.25rem; font: 800 1rem 'Nunito Sans', system-ui, sans-serif; color: oklch(0.47 0.088 191); text-decoration: none; box-shadow: 0 2px 8px -4px oklch(0.3 0.05 70 / 0.3); transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 200ms ease-out, color 150ms ease-out; } .ds-btn-quiet:hover { color: oklch(0.4 0.08 192); box-shadow: 0 6px 18px -8px oklch(0.3 0.05 70 / 0.22); } .ds-btn-quiet:active { transform: scale(0.97); } .ds-btn-quiet:focus-visible { outline: 3px solid oklch(0.26 0.014 75); outline-offset: 2px; }"
+        },
+        {
+            "name": "Kolom Cari",
+            "kind": "input",
+            "refersTo": "field",
+            "description": "Sumur pasir dengan batas 3:1 dan sudut 16px.",
+            "html": "<input class=\"ds-field\" type=\"search\" placeholder=\"Ketik nama layanan\">",
+            "css": ".ds-field { box-sizing: border-box; height: 3rem; width: 100%; border-radius: 1rem; border: 1.5px solid oklch(0.6 0.03 80); background: oklch(0.968 0.019 84); padding: 0 1rem; font: 400 1rem 'Nunito Sans', system-ui, sans-serif; color: oklch(0.26 0.014 75); caret-color: oklch(0.47 0.088 191); } .ds-field::placeholder { color: oklch(0.46 0.022 78); } .ds-field:hover { border-color: oklch(0.46 0.022 78); } .ds-field:focus-visible { outline: 3px solid oklch(0.26 0.014 75); outline-offset: 2px; box-shadow: 0 0 0 2px oklch(1 0 0); }"
+        },
+        {
+            "name": "Kartu Layanan",
+            "kind": "card",
+            "refersTo": "card",
+            "description": "Kartu putih 22px dengan bayangan card yang naik ke lift saat hover; kapsul Lihat adalah penanda, tautan ada di judul.",
+            "html": "<article class=\"ds-card\"><h3 class=\"ds-card-title\"><a href=\"#\">Pembuatan izin usaha</a></h3><p class=\"ds-card-text\">Persyaratan dan alur pengajuan izin usaha.</p><div class=\"ds-card-foot\"><span class=\"ds-pill\">7 hari kerja</span><span class=\"ds-pill ds-pill-free\">Gratis</span><span class=\"ds-go\" aria-hidden=\"true\">Lihat</span></div></article>",
+            "css": ".ds-card { position: relative; display: flex; flex-direction: column; max-width: 22rem; border-radius: 1.375rem; background: oklch(1 0 0); padding: 1.25rem; font-family: 'Nunito Sans', system-ui, sans-serif; box-shadow: 0 6px 18px -8px oklch(0.3 0.05 70 / 0.22); transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 200ms ease-out; } .ds-card:hover { box-shadow: 0 14px 28px -12px oklch(0.3 0.05 70 / 0.32); } .ds-card:hover .ds-card-title a { color: oklch(0.47 0.088 191); } .ds-card:active { transform: scale(0.97); } .ds-card-title { margin: 0; font-size: 1.125rem; line-height: 1.375; font-weight: 800; } .ds-card-title a { color: oklch(0.26 0.014 75); text-decoration: none; } .ds-card-title a::after { content: ''; position: absolute; inset: 0; } .ds-card-text { margin: 0.4rem 0 0; font-size: 0.95rem; line-height: 1.6; color: oklch(0.46 0.022 78); } .ds-card-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem; padding-top: 1rem; } .ds-pill { border-radius: 999px; background: oklch(0.968 0.019 84); padding: 0.375rem 0.75rem; font-size: 0.875rem; color: oklch(0.26 0.014 75); } .ds-pill-free { background: oklch(0.955 0.04 155); color: oklch(0.45 0.1 155); font-weight: 700; } .ds-go { display: inline-flex; height: 2.25rem; align-items: center; border-radius: 999px; background: oklch(0.47 0.088 191); padding: 0 1rem; font-size: 0.875rem; font-weight: 800; color: oklch(1 0 0); }"
+        },
+        {
+            "name": "Badge Sumber",
+            "kind": "chip",
+            "refersTo": "source-badge-media-center",
+            "description": "Penanda asal berita: ikon plus teks, nada tanah liat untuk Media Center, netral untuk berita dinas. Bukan elemen tekan, jadi tidak teal.",
+            "html": "<span class=\"ds-badge\">Media Center</span> <span class=\"ds-badge ds-badge-local\">Berita Dinas</span>",
+            "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.375rem; border-radius: 999px; background: oklch(0.945 0.035 70); padding: 0.25rem 0.625rem; font: 700 0.75rem 'Nunito Sans', system-ui, sans-serif; color: oklch(0.45 0.11 48); } .ds-badge-local { background: oklch(0.935 0.03 82); color: oklch(0.26 0.014 75); }"
+        },
+        {
+            "name": "Bilah Tab Bawah",
+            "kind": "nav",
+            "refersTo": "card",
+            "description": "Navigasi ponsel: empat tab, halaman aktif ditandai kapsul teal di belakang ikon dan huruf lebih tebal. Hanya di bawah breakpoint lg.",
+            "html": "<nav class=\"ds-tabbar\"><a class=\"ds-tab ds-tab-here\" href=\"#\" aria-current=\"page\"><span class=\"ds-tab-icon\"></span>Beranda</a><a class=\"ds-tab\" href=\"#\"><span class=\"ds-tab-icon\"></span>Layanan</a><a class=\"ds-tab\" href=\"#\"><span class=\"ds-tab-icon\"></span>Berita</a><a class=\"ds-tab\" href=\"#\"><span class=\"ds-tab-icon\"></span>Kontak</a></nav>",
+            "css": ".ds-tabbar { display: grid; grid-template-columns: repeat(4, 1fr); max-width: 28rem; border-radius: 1.75rem 1.75rem 0 0; background: oklch(1 0 0); box-shadow: 0 -6px 18px -8px oklch(0.3 0.05 70 / 0.22); font-family: 'Nunito Sans', system-ui, sans-serif; } .ds-tab { display: flex; min-height: 4.5rem; flex-direction: column; align-items: center; justify-content: center; gap: 0.25rem; font-size: 0.75rem; font-weight: 700; color: oklch(0.46 0.022 78); text-decoration: none; transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1); } .ds-tab:hover { color: oklch(0.26 0.014 75); } .ds-tab:active { transform: scale(0.97); } .ds-tab:focus-visible { outline: 3px solid oklch(0.26 0.014 75); outline-offset: 2px; } .ds-tab-icon { display: block; height: 2rem; width: 3.5rem; border-radius: 999px; } .ds-tab-here { color: oklch(0.47 0.088 191); font-weight: 800; } .ds-tab-here .ds-tab-icon { background: oklch(0.47 0.088 191); }"
+        }
+    ],
+    "narrative": {
+        "northStar": "Lembar Kota",
+        "overview": "Situs dinas yang terasa seperti aplikasi layanan yang sudah akrab: satu kartu putih untuk satu gagasan, di atas pasir hangat. Kepribadiannya tenang, ramah, dan resmi tanpa kaku. Kepadatan sedang, teks besar (16px ke atas), target sentuh lapang, karena pembacanya warga di ponsel murah, di luar ruangan, dengan data terbatas. Identitas dinas (nama, logo, sapaan) selalu datang dari Pengaturan, bukan dari tema.\n\nDunia ini dikenali walau semua isinya dihapus: pasir, putih, satu teal. Tidak ada gambar raster yang dikirim oleh tema; hero halaman tersusun dari tipografi, kartu, dan kolom cari. Ikon adalah garis Lucide, dipasang sebagai SVG, bukan font ikon atau emoji.\n\nAturan yang menopang seluruh sistem: teal berarti bisa ditekan. Elemen yang nonaktif, informatif, atau dekoratif tidak berwarna teal.",
+        "keyCharacteristics": [
+            "Latar pasir hangat, kartu putih bersudut besar, teks tinta hangat.",
+            "Satu warna aksi (teal laut) yang eksklusif untuk elemen interaktif.",
+            "Kedalaman hanya lewat bayangan hangat tipis; tidak pernah bayangan ditambah garis.",
+            "Satu-satunya gerak yang dirancang: pegas lembut saat ditekan, tanpa pantulan.",
+            "Bilah navigasi bawah di ponsel, header atas di layar lebar.",
+            "Hero halaman tanpa gambar sebagai komposisi dasar; foto hanya tambahan opsional di layar sedang ke atas."
+        ],
+        "rules": [
+            {
+                "name": "The Teal Means Pressable Rule",
+                "body": "Teal hanya untuk yang bisa ditekan. Bila sebuah elemen tidak bisa ditekan, jangan beri teal; bila nonaktif, ia kehilangan warnanya. Uji: hapus semua teal dari halaman, dan yang tersisa tidak boleh ada yang terlihat seperti tombol.",
+                "section": "colors"
+            },
+            {
+                "name": "The Meaning Beyond Color Rule",
+                "body": "Sumber berita, status biaya, dan halaman aktif selalu dibedakan dengan ikon, teks, atau bentuk, tidak pernah dengan warna saja.",
+                "section": "colors"
+            },
+            {
+                "name": "The Heavy Voice Rule",
+                "body": "Judul dan tombol memakai bobot 800; tautan dan label 700; teks biasa 400. Jangan menambah keluarga font kedua.",
+                "section": "typography"
+            },
+            {
+                "name": "The Balanced Heading Rule",
+                "body": "Judul h1 sampai h3 memakai text-wrap balance; angka dan waktu memakai angka tabular.",
+                "section": "typography"
+            },
+            {
+                "name": "The Shadow Or Border Rule",
+                "body": "Elevasi adalah bayangan, tidak pernah bayangan ditambah garis. Kartu tidak punya border. Satu-satunya batas yang tampak adalah batas kolom isian (fungsi, 3:1), bukan elevasi.",
+                "section": "elevation"
+            },
+            {
+                "name": "The Focus Ring Exception",
+                "body": "Cincin fokus keyboard adalah garis tinta 3px dengan halo putih 2px; ia mengikuti bentuk elemen dan bukan elevasi.",
+                "section": "elevation"
+            }
+        ],
+        "dos": [
+            "Do pakai teal (action) hanya pada elemen yang bisa ditekan, dan satu tombol aksi utama per tampilan.",
+            "Do beri kedalaman dengan salah satu dari empat bayangan hangat; naikkan satu tingkat saat hover.",
+            "Do pakai satu keluarga Nunito Sans dengan bobot 400, 600, 700, 800.",
+            "Do biarkan gerak hanya berupa pegas tekan (220ms, ease-soft) dan hormati prefers-reduced-motion serta \"Hentikan animasi\" di widget aksesibilitas.",
+            "Do ambil warna dari token tema lewat class Tailwind; tanpa kode hex di komponen.",
+            "Do bedakan makna dengan ikon dan teks selain warna; target sentuh minimal 44px.",
+            "Do ambil nama kota, sapaan, dan tautan dari Pengaturan dan data situs."
+        ],
+        "donts": [
+            "Don't menaruh border pada kartu yang sudah punya bayangan.",
+            "Don't memberi teal pada elemen yang tidak bisa ditekan, termasuk badge, ikon dekoratif, atau elemen nonaktif.",
+            "Don't menambah gerak masuk (fade, slide, pantulan) saat elemen muncul.",
+            "Don't meniru TemaModern (rangka navy dan emas) atau gaya aplikasi konsumer yang riang (oranye, ilustrasi lucu, emoji).",
+            "Don't memakai ikon glif atau emoji; ikon adalah SVG garis Lucide.",
+            "Don't menjadikan foto syarat komposisi hero; hero harus utuh tanpa gambar."
+        ]
+    }
+}

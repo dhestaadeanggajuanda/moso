@@ -297,6 +297,12 @@ Jadi pembaruan keamanan tidak mengubah susunan halaman yang dibuat admin. Yang b
 
 **Tampilan awal.** `db:seed` di instance baru membuat halaman `beranda` yang langsung terbit (Banner, Akses Cepat, Layanan Publik, Berita Terkini, Agenda Kegiatan) dan menu header dasar (Beranda, Berita, Layanan, Informasi Publik, E-SAKIP), tanpa berita atau akun contoh. Admin tinggal mengganti teks dan foto banner di Page Builder, dan menyalakan berita Media Center dengan mengisi kata kunci dinas di blok Berita Terkini. Konten demo lengkap hanya dimuat di `APP_ENV=local`.
 
+**Dua tema bawaan.** Image bawaan mengompilasi `TemaModern` dan `TemaModern2` (`VITE_THEMES=TemaModern,TemaModern2`). `TemaModern` sudah dipakai website dan tetap menjadi tema bawaan (tema pertama di daftar). `TemaModern2` adalah tema dengan desain baru (latar pasir, kartu putih, satu aksi teal, bilah navigasi bawah di ponsel), sehingga tampilan website yang sudah berjalan tidak berubah saat image diperbarui. Website pindah hanya bila admin memilihnya (Pengaturan `theme.active`, atau kolom Tema per halaman). Aturannya:
+
+- Tema yang sudah dirilis hanya menerima perbaikan bug dan keamanan, bukan perubahan desain. Desain baru dibuat sebagai tema baru (`TemaModern3`, dan seterusnya).
+- Jangan menghapus tema, atau mengubah urutannya di `VITE_THEMES`, selama masih ada website yang memakainya. Website itu akan diam-diam jatuh ke tema pertama.
+- `tests/Feature/Site/ThemeContractTest.php` memastikan setiap tema punya komponen untuk semua blok, layout dan tampilan yang sama, stylesheet, alias font, dan tidak mengimpor dari tema lain.
+
 **Tema baru.** Tema ada di `resources/js/Themes/<NamaTema>` dan ikut dikompilasi ke image saat build, hanya bila tercantum di `VITE_THEMES`:
 
 1. Tambahkan folder tema di repo (lihat `docs/SOP-FRONTEND.md`), commit, lalu `git pull` di server.
